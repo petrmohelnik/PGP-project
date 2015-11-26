@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
-
+	
 	Model m;
 	std::shared_ptr<Mesh> sphereMesh(new Mesh);
 	sphereMesh->createSphere(1.0, 36);
