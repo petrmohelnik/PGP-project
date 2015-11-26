@@ -48,7 +48,10 @@
     <ClCompile Include="source\lodepng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\ParticleSystem.cpp">
+    <ClCompile Include="source\ParticleSystemRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ParticleTechnique.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,7 +89,10 @@
     <ClInclude Include="source\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\ParticleSystem.h">
+    <ClInclude Include="source\ParticleSystemRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ParticleTechnique.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,6 +101,15 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="resource\basic.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\particle.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\particle.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\particle.gs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

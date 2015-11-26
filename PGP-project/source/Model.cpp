@@ -69,6 +69,12 @@ void Mesh::createSphere(float r, int vertices)
 	drawMode = GL_TRIANGLE_STRIP;
 }
 
+void Mesh::createParticles(int count)
+{
+	for (int i = 0; i < count; i++)
+		v.push_back(glm::vec3((((double)rand()) / RAND_MAX) * 4 - 2, (((double)rand()) / RAND_MAX) * 4 - 2, (((double)rand()) / RAND_MAX) * 4 - 2));
+}
+
 void Mesh::setDrawMode(GLuint m)
 {
 	drawMode = m;

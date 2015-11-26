@@ -39,6 +39,7 @@ public:
 	int getSize();
 	std::shared_ptr<Material> getMaterial();
 	void createSphere(float r, int vertices);
+	void createParticles(int count);
 	void setDrawMode(GLuint m);
 	GLuint getDrawMode();
 };

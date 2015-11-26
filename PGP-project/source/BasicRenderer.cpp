@@ -33,6 +33,5 @@ void BasicRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 am
 	technique->setM(M);
 
 	technique->draw();
-
 }
 

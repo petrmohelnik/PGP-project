@@ -6,6 +6,7 @@
 #include "SDLHandler.h"
 #include "FileSystem.h"
 #include "BasicRenderer.h"
+#include "ParticleSystemRenderer.h"
 #include "Shader.h"
 #include "Scene.h"
 #include "Application.h"
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
 	Application app;
 	FileSystem f;
 	Shader s;
-	string strVs, strFs;
+	string strVs, strFs, strPVs, strPGs, strPFs;
 	if (!f.loadFile("resource/basic.vs", strVs)) {
 		cin.get();
 		return -1;
@@ -65,7 +66,19 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
-	GLuint vs, fs;
+	if (!f.loadFile("resource/particle.vs", strPVs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/particle.gs", strPGs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/particle.fs", strPFs)) {
+		cin.get();
+		return -1;
+	}
+	GLuint vs, fs, Pvs, Pgs, Pfs;
 	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) {
 		cin.get();
 		return -1;
@@ -75,6 +88,22 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	if (!s.linkProgram(vs, fs, "basic_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strPVs.c_str(), GL_VERTEX_SHADER, "particle_vs", Pvs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strPGs.c_str(), GL_GEOMETRY_SHADER, "particle_gs", Pgs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strPFs.c_str(), GL_FRAGMENT_SHADER, "particle_fs", Pfs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(Pvs, Pgs, Pfs, "particle_program")) {
 		cin.get();
 		return -1;
 	}
@@ -95,9 +124,26 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	Model particles;
+	std::shared_ptr<Mesh> particlesMesh(new Mesh);
+	particlesMesh->createParticles(100000);
+	std::shared_ptr<Material> particleMat(new Material);
+	Texture particleTex;
+	if (!f.loadTexture("resource/particle_D.png", particleTex))
+		return false;
+	particleMat->setDifTex(particleTex);
+	particlesMesh->addMaterial(particleMat);
+	particles.addMesh(particlesMesh);
+	std::shared_ptr<ParticleSystemRenderer> ParticleSystemRenderer(new ParticleSystemRenderer(glm::vec3(0.0)));
+	if (!ParticleSystemRenderer->initRenderer(particles, s.getProgram("particle_program"))) {
+		cin.get();
+		return -1;
+	}
+
 	std::shared_ptr<MainScene> scene(new MainScene);
 	scene->setName("mainScene");
 	scene->addObject(sphereRenderer);
+	scene->addObject(ParticleSystemRenderer);
 	scene->initCamera(45.0f, W_WIDTH, W_HEIGHT, 0.1f, 1000.0f, CAM_TRANS_ROT);
 	scene->getCamera()->translate(glm::vec3(0.0f, 0.0f, 2.0f));
 	Light light(glm::vec3(10.0, 10.0, 10.0));
