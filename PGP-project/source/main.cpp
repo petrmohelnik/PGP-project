@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	Application app;
 	FileSystem f;
 	Shader s;
-	string strVs, strFs, strPVs, strPGs, strPFs;
+	string strVs, strFs, strPVs, strPGs, strPFs, strEmitPCs, strSortPCs, strSimulatePCs;
 	if (!f.loadFile("resource/basic.vs", strVs)) {
 		cin.get();
 		return -1;
@@ -78,7 +78,19 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
-	GLuint vs, fs, Pvs, Pgs, Pfs;
+	if (!f.loadFile("resource/simulate_particle.comp", strSimulatePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/emit_particle.comp", strEmitPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/sort_particle.comp", strSortPCs)) {
+		cin.get();
+		return -1;
+	}
+	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPCs;
 	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) {
 		cin.get();
 		return -1;
@@ -107,10 +119,34 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
+	if (!s.compileShader(strSimulatePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_compute", SimulatePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(SimulatePCs, "simulate_particle_compute_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strEmitPCs.c_str(), GL_COMPUTE_SHADER, "emit_particle_compute", EmitPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(EmitPCs, "emit_particle_compute_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strSortPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_compute", SortPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(SortPCs, "sort_particle_compute_program")) {
+		cin.get();
+		return -1;
+	}
 	
 	Model m;
 	std::shared_ptr<Mesh> sphereMesh(new Mesh);
-	sphereMesh->createSphere(1.0, 36);
+	sphereMesh->createSphere(0.3, 108);
 	std::shared_ptr<Material> mat(new Material);
 	Texture tex;
 	if (!f.loadTexture("resource/white_D.png", tex))
@@ -126,7 +162,7 @@ int main(int argc, char **argv)
 
 	Model particles;
 	std::shared_ptr<Mesh> particlesMesh(new Mesh);
-	particlesMesh->createParticles(100000);
+	particlesMesh->createParticles(1000000);
 	std::shared_ptr<Material> particleMat(new Material);
 	Texture particleTex;
 	if (!f.loadTexture("resource/particle_D.png", particleTex))
@@ -135,7 +171,8 @@ int main(int argc, char **argv)
 	particlesMesh->addMaterial(particleMat);
 	particles.addMesh(particlesMesh);
 	std::shared_ptr<ParticleSystemRenderer> ParticleSystemRenderer(new ParticleSystemRenderer(glm::vec3(0.0)));
-	if (!ParticleSystemRenderer->initRenderer(particles, s.getProgram("particle_program"))) {
+	if (!ParticleSystemRenderer->initRenderer(particles, s.getProgram("particle_program"), 
+		s.getProgram("simulate_particle_compute_program"), s.getProgram("emit_compute_program"), s.getProgram("sort_compute_program"))) {
 		cin.get();
 		return -1;
 	}

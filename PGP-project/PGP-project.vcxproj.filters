@@ -112,5 +112,14 @@
     <None Include="resource\particle.gs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource\simulate_particle.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\emit_particle.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\sort_particle.comp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

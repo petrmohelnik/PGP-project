@@ -58,11 +58,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>..\lib\glew32s.lib;..\lib\glew32.lib;..\lib\SDL2.lib;..\lib\SDL2main.lib;..\lib\SDL2test.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -98,9 +100,12 @@
   <ItemGroup>
     <None Include="resource\basic.fs" />
     <None Include="resource\basic.vs" />
+    <None Include="resource\emit_particle.comp" />
+    <None Include="resource\simulate_particle.comp" />
     <None Include="resource\particle.fs" />
     <None Include="resource\particle.gs" />
     <None Include="resource\particle.vs" />
+    <None Include="resource\sort_particle.comp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

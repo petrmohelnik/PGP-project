@@ -33,5 +33,18 @@ void BasicRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 am
 	technique->setM(M);
 
 	technique->draw();
+
+
+	M = glm::translate(M, glm::vec3(0.25));
+	M = glm::scale(M, glm::vec3(0.7));
+	technique->setM(M);
+
+	technique->draw();
+
+	M = glm::translate(M, glm::vec3(0.25));
+	M = glm::scale(M, glm::vec3(0.7));
+	technique->setM(M);
+
+	technique->draw();
 }
 

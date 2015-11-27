@@ -13,6 +13,7 @@ private:
 	std::vector<GLuint> programs;
 public:
 	bool compileShader(const char *file, GLuint shaderType, const char *name, GLuint &s);
+	bool linkProgram(GLuint computeShader, const char *name);
 	bool linkProgram(GLuint vertexShader, GLuint fragmentShader, const char *name);
 	bool linkProgram(GLuint vertexShader, GLuint geometryShader, GLuint fragmentShader, const char *name);
 	GLuint getProgram(const char *name);

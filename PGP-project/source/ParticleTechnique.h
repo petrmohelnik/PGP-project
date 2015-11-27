@@ -5,12 +5,23 @@
 #include <GL/glew.h>
 #include "Model.h"
 
+struct SortList
+{
+	GLuint index;
+	float distance;
+	SortList(GLuint i, float d) : index(i), distance(d) {}
+};
+
 class ParticleTechnique
 {
 protected:
 	GLuint vao;
+	GLuint vbo[3];
 	int indices; //amount of indices in vao
 	GLuint program;
+	GLuint simulateComputeProgram;
+	GLuint emitComputeProgram;
+	GLuint sortComputeProgram;
 	GLuint mvUniform;
 	GLuint pUniform;
 	GLuint texDifSamplerUniform;
@@ -20,7 +31,7 @@ protected:
 	glm::mat4 v;
 	int texDifSampler;
 public:
-	void init(Mesh &m, GLuint p);
+	void init(Mesh &m, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP);
 	void draw();
 	void setM(glm::mat4 mat);
 	void setV(glm::mat4 mat);

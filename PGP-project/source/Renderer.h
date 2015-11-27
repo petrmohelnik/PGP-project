@@ -12,7 +12,7 @@ class Renderer
 {
 protected:
 public:
-	virtual bool initRenderer(Model &m, GLuint p) = 0;
+	//virtual bool initRenderer(Model &m, GLuint p) = 0;
 	virtual void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight) = 0;
 };
 
