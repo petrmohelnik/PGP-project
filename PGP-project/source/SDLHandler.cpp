@@ -60,7 +60,13 @@ void SDLHandler::mainLoop(Application &app)
 		//	if (event.key.keysym.sym == SDLK_ESCAPE) 
 		//		break; //konec kdyz ESC
 
-		app.display();
+		Uint32 tics = SDL_GetTicks();
+		if (lastTics == 0)
+			lastTics = tics;
+		Uint32 dt = tics - lastTics;
+		lastTics = tics;
+
+		app.display(dt);
 		SDL_GL_SwapWindow(mainwindow);
 	}
 

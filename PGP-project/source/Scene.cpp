@@ -30,11 +30,11 @@ Camera* Scene::getCamera()
 	return &camera;
 }
 
-void Scene::render()
+void Scene::render(Uint32 dt)
 {
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{
-		objects[i]->render(camera, lights, ambientLight);
+		objects[i]->render(camera, lights, ambientLight, dt);
 	}
 }
 
@@ -121,13 +121,13 @@ void MainScene::initCamera(float fov, int width, int height, float nearPlane, fl
 	cameraMode = mode;
 }
 
-void MainScene::render()
+void MainScene::render(Uint32 dt)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{
-		objects[i]->render(camera, lights, ambientLight);
+		objects[i]->render(camera, lights, ambientLight, dt);
 	}
 }

@@ -17,10 +17,12 @@ bool ParticleSystemRenderer::initRenderer(Model &m, GLuint p, GLuint simulateCom
 	return true;
 }
 
-void ParticleSystemRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight)
+void ParticleSystemRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt)
 {
 	technique->setP(cam.getProjection());
 	technique->setV(cam.getView());
+	technique->setDt(dt);
+	technique->setViewPos(cam.getPos());
 	technique->bindTexDif(0);
 
 	glm::mat4 M = glm::mat4(1.0);

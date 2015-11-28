@@ -31,7 +31,7 @@ public:
 	void setAmbientLight(glm::vec3 a);
 	virtual void initCamera(float fov, int width, int height, float nearPlane, float farPlane, int mode = CAM_ROT_TRANS);
 	Camera* getCamera();
-	virtual void render();
+	virtual void render(Uint32 dt);
 	const char* getName();
 	virtual void handleSdlEvent(SDL_Event &event);
 };
@@ -47,7 +47,7 @@ public:
 	void handleSdlEvent(SDL_Event &event);
 	void setCameraMode(int mode);
 	void initCamera(float fov, int width, int height, float nearPlane, float farPlane, int mode = CAM_ROT_TRANS);
-	void render();
+	void render(Uint32 dt);
 };
 
 #endif //SCENE_H

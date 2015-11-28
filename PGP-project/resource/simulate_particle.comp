@@ -2,12 +2,60 @@
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
-layout(std430, binding = 0) buffer particleBuffer{
-    vec3 particle[];
+struct ParticlePool {
+	vec4 pos;
 };
+
+struct SortList {
+	unsigned int index;
+	float distance;
+	float pad[2];
+};
+
+struct DeadList {
+	unsigned int index;
+	float pad[3];
+};
+
+layout(std430, binding = 0) buffer particleBuffer{
+    ParticlePool particle[];
+};
+
+layout(std430, binding = 1) buffer sortBuffer{
+    SortList sort[];
+};
+
+layout(std430, binding = 2) buffer deadBuffer{
+    DeadList dead[];
+};
+
+layout(binding = 3, offset = 0) uniform atomic_uint sortCounter;
+layout(binding = 4, offset = 0) uniform atomic_uint deadCounter;
+
+uniform float dt;
+uniform vec3 viewPos;
 
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
-    particle[id] = particle[id] + vec3(0.01, 0.01, 0.01);
+	vec4 posTtl= particle[id].pos;
+	vec3 pos = posTtl.xyz;
+	float ttl = posTtl.w;
+
+	if(ttl > 0.0) {
+		ttl -= dt;
+
+		if(ttl <= 0.0) {
+			uint c = atomicCounterDecrement(deadCounter);
+			dead[c].index = id;
+			particle[id].pos.w = ttl;
+		} else {
+			uint c = atomicCounterIncrement(sortCounter);
+			sort[c].index = id;
+			sort[c].distance = distance(pos, viewPos);
+
+			particle[id].pos.xyz = pos + vec3(0.01, 0.01, 0.01);
+			particle[id].pos.w = ttl;
+		}
+	}
 }

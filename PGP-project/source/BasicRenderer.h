@@ -19,7 +19,7 @@ private:
 public:
 	BasicRenderer(glm::vec3 position);
 	bool initRenderer(Model &m, GLuint p);
-	void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight);
+	void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt);
 };
 
 #endif //BASIC_RENDERER_H

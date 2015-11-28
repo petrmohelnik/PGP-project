@@ -1,8 +1,11 @@
 #version 450
 
-in vec3 v_pos;
+in vec4 v_pos;
+
+out float g_ttl;
 
 void main()
 {
-	gl_Position = vec4(v_pos, 1.0);
+	g_ttl = v_pos.w;
+	gl_Position = vec4(v_pos.xyz, 1.0);
 }

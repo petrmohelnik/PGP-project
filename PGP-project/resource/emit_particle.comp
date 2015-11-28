@@ -2,6 +2,28 @@
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
+struct ParticlePool {
+	vec4 pos;
+};
+
+struct DeadList {
+	unsigned int index;
+};
+
+layout(std430, binding = 0) buffer particleBuffer{
+    ParticlePool particle[];
+};
+
+layout(std430, binding = 1) buffer deadBuffer{
+    DeadList dead[];
+};
+
+layout(binding = 2, offset = 0) uniform atomic_uint deadCounter;
+
 void main()
 {
+	uint c = atomicCounterIncrement(deadCounter);
+	uint i = dead[c].index;
+	particle[i].pos.xyz = vec3(0.1,0.0,0.0);
+	particle[i].pos.w = 10.0;
 }

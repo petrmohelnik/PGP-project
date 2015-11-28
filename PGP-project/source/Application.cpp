@@ -28,9 +28,9 @@ std::shared_ptr<Scene> Application::getScene(const char *name)
 	return nullptr;
 }
 
-void Application::display()
+void Application::display(Uint32 dt)
 {
-	activeScene->render();
+	activeScene->render(dt);
 }
 
 void Application::sdlEvent(SDL_Event &event)
