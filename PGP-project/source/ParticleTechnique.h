@@ -15,14 +15,12 @@ struct SortList
 {
 	GLuint index;
 	float distance;
-	float pad[2];
 	SortList(GLuint i, float d) : index(i), distance(d) {}
 };
 
 struct DeadList
 {
 	GLuint index;
-	float pad[3];
 	DeadList(GLuint i) : index(i) {}
 };
 
@@ -40,6 +38,8 @@ protected:
 	GLuint pUniform;
 	GLuint dtUniform;
 	GLuint viewPosUniform;
+	GLuint maxParticlesUniform;
+	GLuint maxEmitUniform;
 	GLuint texDifSamplerUniform;
 	GLuint texDif;
 	glm::mat4 p;
@@ -49,7 +49,7 @@ protected:
 	glm::vec3 viewPos;
 	int texDifSampler;
 public:
-	void init(Mesh &m, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP);
+	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP);
 	void draw();
 	void setM(glm::mat4 mat);
 	void setV(glm::mat4 mat);

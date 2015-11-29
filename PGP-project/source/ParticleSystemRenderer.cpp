@@ -6,14 +6,14 @@ ParticleSystemRenderer::ParticleSystemRenderer(glm::vec3 position)
 	technique.reset(new ParticleTechnique);
 }
 
-bool ParticleSystemRenderer::initRenderer(Model &m, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP)
+bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP)
 {
 	if (m.getMeshesSize() < 1) {
 		std::cout << "ERROR: Model is empty!";
 		return false;
 	}
 
-	technique->init(*(m.getMeshes()[0]), p, simulateComputeP, emitComputeP, sortComputeP);
+	technique->init(*(m.getMeshes()[0]), count, p, simulateComputeP, emitComputeP, sortComputeP);
 	return true;
 }
 

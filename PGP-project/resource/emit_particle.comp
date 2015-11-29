@@ -1,6 +1,6 @@
 #version 450
 
-layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 struct ParticlePool {
 	vec4 pos;
@@ -14,16 +14,26 @@ layout(std430, binding = 0) buffer particleBuffer{
     ParticlePool particle[];
 };
 
-layout(std430, binding = 1) buffer deadBuffer{
+layout(std430, binding = 2) buffer deadBuffer{
     DeadList dead[];
 };
 
-layout(binding = 2, offset = 0) uniform atomic_uint deadCounter;
+layout(binding = 4, offset = 0) uniform atomic_uint deadCounter;
+
+float rand(vec2 co){
+  return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+uniform uint maxEmit;
 
 void main()
 {
-	uint c = atomicCounterIncrement(deadCounter);
-	uint i = dead[c].index;
-	particle[i].pos.xyz = vec3(0.1,0.0,0.0);
-	particle[i].pos.w = 10.0;
+	float id = gl_GlobalInvocationID.x;
+	if(id < maxEmit)
+	{
+		uint c = atomicCounterIncrement(deadCounter);
+		uint i = dead[c].index;
+		particle[i].pos.xyz = particle[i].pos.xyz - vec3(1.0, 1.0, 1.0);
+		particle[i].pos.w = 1.0;
+	}
 }
