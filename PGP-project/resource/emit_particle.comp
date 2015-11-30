@@ -33,7 +33,7 @@ void main()
 	{
 		uint c = atomicCounterIncrement(deadCounter);
 		uint i = dead[c].index;
-		particle[i].pos.xyz = particle[i].pos.xyz - vec3(1.0, 1.0, 1.0);
+		particle[i].pos.xyz = particle[i].pos.xyz - vec3(0.1, 0.1, 0.1);
 		particle[i].pos.w = 1.0;
 	}
 }
