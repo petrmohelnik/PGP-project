@@ -61,17 +61,3 @@ void main()
 		}
 	}
 }
-
-/*void main()
-{
-    uint id = gl_GlobalInvocationID.x;
-
-	{
-		float ttl = particle[id].pos.w;
-
-
-		if(ttl > 0.0) {
-				atomicCounterIncrement(sortCounter);
-		}
-	}
-}*/

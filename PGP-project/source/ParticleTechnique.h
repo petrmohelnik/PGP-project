@@ -40,6 +40,9 @@ protected:
 	GLuint viewPosUniform;
 	GLuint maxParticlesUniform;
 	GLuint maxEmitUniform;
+	GLuint maxSortUniform;
+	GLuint compareDistUniform;
+	GLuint subArraySizeUniform;
 	GLuint texDifSamplerUniform;
 	GLuint texDif;
 	glm::mat4 p;

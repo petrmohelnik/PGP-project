@@ -171,7 +171,7 @@ int main(int argc, char **argv)
 	particlesMesh->addMaterial(particleMat);
 	particles.addMesh(particlesMesh);
 	std::shared_ptr<ParticleSystemRenderer> ParticleSystemRenderer(new ParticleSystemRenderer(glm::vec3(0.0)));
-	if (!ParticleSystemRenderer->initRenderer(particles, 1000000, s.getProgram("particle_program"),
+	if (!ParticleSystemRenderer->initRenderer(particles, 200000, s.getProgram("particle_program"),
 		s.getProgram("simulate_particle_compute_program"), s.getProgram("emit_particle_compute_program"), s.getProgram("sort_particle_compute_program"))) {
 		cin.get();
 		return -1;

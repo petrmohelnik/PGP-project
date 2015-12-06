@@ -1,7 +1,40 @@
 #version 450
 
-layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+struct SortList {
+	unsigned int index;
+	float distance;
+};
+
+layout(std430, binding = 1) buffer sortBuffer{
+    SortList sort[];
+};
+
+uniform uint numParticles;
+uniform uint compareDist;
+uniform uint subArraySize;
 
 void main()
 {
+    uint id = gl_GlobalInvocationID.x;
+	uint swapId = id^compareDist;
+
+	if(id < swapId && id < numParticles && swapId < numParticles)
+	{
+		float tempDist = sort[id].distance;
+		float tempDistSwap = sort[swapId].distance;
+		uint ascending = (id / subArraySize) % 2;
+
+		if((ascending == 0 && tempDist < tempDistSwap) || (ascending != 0 && tempDist > tempDistSwap))
+		{
+			uint tempIndex = sort[id].index;
+
+			sort[id].index = sort[swapId].index;
+			sort[id].distance = tempDistSwap;
+
+			sort[swapId].index = tempIndex;
+			sort[swapId].distance = tempDist;
+		}
+	}
 }
