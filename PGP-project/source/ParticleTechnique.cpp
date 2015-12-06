@@ -126,6 +126,19 @@ void ParticleTechnique::draw()
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		}
 	}
+/*	glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[1]);
+	SortList *ptr2 = (SortList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(SortList), GL_MAP_READ_BIT);
+	std::vector<float> sortedList;
+	for (int i = 0; i < sortCounter; i++) {
+		sortedList.push_back(ptr2[i].distance);
+	}
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+	float prevDist = 10000.0;
+	for (int i = 0; i < sortCounter; i++) {
+		if (sortedList[i] > prevDist)
+			i = i;
+		prevDist = sortedList[i];
+	}*/
 	
 	//vykresleni
 	glEnable(GL_BLEND);

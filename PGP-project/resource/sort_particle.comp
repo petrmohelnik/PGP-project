@@ -18,6 +18,32 @@ uniform uint subArraySize;
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
+	uint index_low = id & (compareDist - 1);
+	uint index_high = 2 * (id - index_low);
+	uint index = index_high + index_low;
+	uint nSwapElem = compareDist == subArraySize / 2 ? index_high + (2 * compareDist - 1) - index_low : index_high + compareDist + index_low;
+
+	if(nSwapElem < numParticles && index < numParticles)
+	{
+		float nSwapElemDist, indexDist;
+		if((indexDist = sort[index].distance) < (nSwapElemDist = sort[nSwapElem].distance))
+		{
+			uint tempIndex = sort[index].index;
+			float tempDist = indexDist;
+
+			sort[index].index = sort[nSwapElem].index;
+			sort[index].distance = nSwapElemDist;
+
+			sort[nSwapElem].index = tempIndex;
+			sort[nSwapElem].distance = tempDist;
+		}
+	}
+}
+
+
+/*void main()
+{
+    uint id = gl_GlobalInvocationID.x;
 	uint swapId = id^compareDist;
 
 	if(id < swapId && id < numParticles && swapId < numParticles)
@@ -37,4 +63,29 @@ void main()
 			sort[swapId].distance = tempDist;
 		}
 	}
-}
+}*/
+
+/*void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+	uint swapId = id^compareDist;
+
+	if(id < numParticles && swapId < numParticles)
+	{
+		uint ascending = (id / subArraySize) % 2;
+		bool left = id < swapId;
+		float leftDist = left ? sort[id].distance : sort[swapId].distance;
+		float rightDist = left ? sort[swapId].distance : sort[id].distance;
+
+		if((ascending == 0 && leftDist < rightDist) || (ascending != 0 && leftDist > rightDist))
+		{
+			uint tempIndexSwap = sort[swapId].index;
+			float tempDistSwap = left ? rightDist : leftDist;
+
+			barrier();
+
+			sort[id].index = tempIndexSwap;
+			sort[id].distance = tempDistSwap;
+		}
+	}
+}*/
