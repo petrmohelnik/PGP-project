@@ -1,11 +1,13 @@
 #include "ParticleTechnique.h"
 
-void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP)
+void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP)
 {
 	program = p;
 	simulateComputeProgram = simulateComputeP;
 	emitComputeProgram = emitComputeP;
 	sortComputeProgram = sortComputeP;
+	sortLocalComputeProgram = sortLocalComputeP;
+	sortLocalInnerComputeProgram = sortLocalInnerComputeP;
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(5, vbo);
@@ -21,6 +23,8 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	maxSortUniform = glGetUniformLocation(sortComputeProgram, "numParticles");
 	compareDistUniform = glGetUniformLocation(sortComputeProgram, "compareDist");
 	subArraySizeUniform = glGetUniformLocation(sortComputeProgram, "subArraySize");
+	maxSortLocalUniform = glGetUniformLocation(sortLocalComputeProgram, "numParticles");
+	maxSortLocalInnerUniform = glGetUniformLocation(sortLocalComputeProgram, "numParticles");
 
 	std::vector<ParticlePool> particlePool;
 	particlePool.reserve(indices);
@@ -83,7 +87,7 @@ void ParticleTechnique::draw()
 	//emit
 	//bere mrtve castice z dead bufferu a nastavuje jim kladny cas zivota
 	glUseProgram(emitComputeProgram);
-	glUniform1ui(maxEmitUniform, (unsigned int)100000);
+	glUniform1ui(maxEmitUniform, (unsigned int)(100000 * dt));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
@@ -111,12 +115,18 @@ void ParticleTechnique::draw()
 	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
 
 	//razeni
+	glUseProgram(sortLocalComputeProgram);
+	glUniform1ui(maxSortLocalUniform, sortCounter);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
+	glDispatchCompute(ceil(sortCounter / 1024.0), 1, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 	unsigned int closestPowOfTwo = 1;
 	while (closestPowOfTwo < sortCounter)
 		closestPowOfTwo *= 2;
 
-	for (unsigned int subArraySize = 2; subArraySize <= closestPowOfTwo; subArraySize *= 2) {
-		for (unsigned int compareDist = subArraySize / 2; compareDist > 0; compareDist /= 2) {
+	for (unsigned int subArraySize = 2048; subArraySize <= closestPowOfTwo; subArraySize *= 2) {
+		for (unsigned int compareDist = subArraySize / 2; compareDist > 512; compareDist /= 2) {
 			glUseProgram(sortComputeProgram);
 			glUniform1ui(maxSortUniform, sortCounter);
 			glUniform1ui(compareDistUniform, compareDist);
@@ -125,8 +135,13 @@ void ParticleTechnique::draw()
 			glDispatchCompute(ceil(sortCounter / 256.0), 1, 1);
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		}
+		glUseProgram(sortLocalInnerComputeProgram);
+		glUniform1ui(maxSortLocalInnerUniform, sortCounter);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
+		glDispatchCompute(ceil(sortCounter / 1024.0), 1, 1);
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}
-/*	glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[1]);
+	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[1]);
 	SortList *ptr2 = (SortList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(SortList), GL_MAP_READ_BIT);
 	std::vector<float> sortedList;
 	for (int i = 0; i < sortCounter; i++) {

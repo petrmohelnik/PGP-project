@@ -1,0 +1,60 @@
+#version 450
+
+#define workGroupSize 1024
+
+layout(local_size_x = workGroupSize, local_size_y = 1, local_size_z = 1) in;
+
+shared uint sIndex[workGroupSize];
+shared float sDistance[workGroupSize];
+
+struct SortList {
+	unsigned int index;
+	float distance;
+};
+
+layout(std430, binding = 1) buffer sortBuffer{
+    SortList sort[];
+};
+
+uniform uint numParticles;
+
+void main()
+{
+	uint global_id = gl_GlobalInvocationID.x;
+    uint local_id = gl_LocalInvocationID.x;
+
+	sIndex[local_id] = sort[global_id].index;
+	sDistance[local_id] = sort[global_id].distance;
+
+	barrier();
+
+	uint maxIndex = numParticles / workGroupSize != gl_WorkGroupID.x ? workGroupSize : numParticles % workGroupSize;
+
+	for (unsigned int compareDist = workGroupSize >> 1; compareDist > 0; compareDist = compareDist >> 1) {
+		uint index_low = local_id & (compareDist - 1);
+		uint index_high = 2 * (local_id - index_low);
+		uint index = index_high + index_low;
+		uint nSwapElem = index_high + compareDist + index_low;
+
+		if(nSwapElem < maxIndex && index < maxIndex)
+		{
+			float nSwapElemDist, indexDist;
+			if((indexDist = sDistance[index]) < (nSwapElemDist = sDistance[nSwapElem]))
+			{
+				uint tempIndex = sIndex[index];
+				float tempDist = indexDist;
+
+				sIndex[index] = sIndex[nSwapElem];
+				sDistance[index] = nSwapElemDist;
+
+				sIndex[nSwapElem] = tempIndex;
+				sDistance[nSwapElem] = tempDist;
+			}
+		}
+
+		barrier();
+	}
+
+	sort[global_id].index = sIndex[local_id] ;
+	sort[global_id].distance = sDistance[local_id];
+}

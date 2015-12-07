@@ -21,7 +21,7 @@ void main()
 	uint index_low = id & (compareDist - 1);
 	uint index_high = 2 * (id - index_low);
 	uint index = index_high + index_low;
-	uint nSwapElem = compareDist == subArraySize / 2 ? index_high + (2 * compareDist - 1) - index_low : index_high + compareDist + index_low;
+	uint nSwapElem = compareDist == subArraySize >> 1 ? index_high + (2 * compareDist - 1) - index_low : index_high + compareDist + index_low;
 
 	if(nSwapElem < numParticles && index < numParticles)
 	{

@@ -34,6 +34,8 @@ protected:
 	GLuint simulateComputeProgram;
 	GLuint emitComputeProgram;
 	GLuint sortComputeProgram;
+	GLuint sortLocalComputeProgram;
+	GLuint sortLocalInnerComputeProgram;
 	GLuint mvUniform;
 	GLuint pUniform;
 	GLuint dtUniform;
@@ -41,6 +43,8 @@ protected:
 	GLuint maxParticlesUniform;
 	GLuint maxEmitUniform;
 	GLuint maxSortUniform;
+	GLuint maxSortLocalUniform;
+	GLuint maxSortLocalInnerUniform;
 	GLuint compareDistUniform;
 	GLuint subArraySizeUniform;
 	GLuint texDifSamplerUniform;
@@ -52,7 +56,7 @@ protected:
 	glm::vec3 viewPos;
 	int texDifSampler;
 public:
-	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP);
+	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP);
 	void draw();
 	void setM(glm::mat4 mat);
 	void setV(glm::mat4 mat);

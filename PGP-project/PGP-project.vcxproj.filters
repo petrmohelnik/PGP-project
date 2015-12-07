@@ -121,5 +121,11 @@
     <None Include="resource\sort_particle.comp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource\sort_particle_local.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\sort_particle_local_inner.comp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

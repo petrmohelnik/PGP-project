@@ -106,6 +106,8 @@
     <None Include="resource\particle.gs" />
     <None Include="resource\particle.vs" />
     <None Include="resource\sort_particle.comp" />
+    <None Include="resource\sort_particle_local.comp" />
+    <None Include="resource\sort_particle_local_inner.comp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

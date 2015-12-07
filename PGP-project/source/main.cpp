@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	Application app;
 	FileSystem f;
 	Shader s;
-	string strVs, strFs, strPVs, strPGs, strPFs, strEmitPCs, strSortPCs, strSimulatePCs;
+	string strVs, strFs, strPVs, strPGs, strPFs, strEmitPCs, strSortPCs, strSortLocalPCs, strSortLocalInnerPCs, strSimulatePCs;
 	if (!f.loadFile("resource/basic.vs", strVs)) {
 		cin.get();
 		return -1;
@@ -90,7 +90,15 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
-	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPCs;
+	if (!f.loadFile("resource/sort_particle_local.comp", strSortLocalPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/sort_particle_local_inner.comp", strSortLocalInnerPCs)) {
+		cin.get();
+		return -1;
+	}
+	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPCs, SortLocalPCs, SortLocalInnerPCs;
 	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) {
 		cin.get();
 		return -1;
@@ -143,6 +151,22 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
+	if (!s.compileShader(strSortLocalPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_local_compute", SortLocalPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(SortLocalPCs, "sort_particle_local_compute_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strSortLocalInnerPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_local_inner_compute", SortLocalInnerPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(SortLocalInnerPCs, "sort_particle_local_inner_compute_program")) {
+		cin.get();
+		return -1;
+	}
 	
 	Model m;
 	std::shared_ptr<Mesh> sphereMesh(new Mesh);
@@ -171,8 +195,10 @@ int main(int argc, char **argv)
 	particlesMesh->addMaterial(particleMat);
 	particles.addMesh(particlesMesh);
 	std::shared_ptr<ParticleSystemRenderer> ParticleSystemRenderer(new ParticleSystemRenderer(glm::vec3(0.0)));
-	if (!ParticleSystemRenderer->initRenderer(particles, 200000, s.getProgram("particle_program"),
-		s.getProgram("simulate_particle_compute_program"), s.getProgram("emit_particle_compute_program"), s.getProgram("sort_particle_compute_program"))) {
+	if (!ParticleSystemRenderer->initRenderer(particles, 250000, s.getProgram("particle_program"),
+		s.getProgram("simulate_particle_compute_program"), s.getProgram("emit_particle_compute_program"),
+		s.getProgram("sort_particle_compute_program"), s.getProgram("sort_particle_local_compute_program"),
+		s.getProgram("sort_particle_local_inner_compute_program"))) {
 		cin.get();
 		return -1;
 	}
