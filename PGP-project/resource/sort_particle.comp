@@ -1,6 +1,14 @@
 #version 450
 
-layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+#define ORDER(x,a,b) {bool swap = bool(int(reverse) ^ int(x[a].distance < x[b].distance)); \
+	SortList tmp_a = x[a]; SortList tmp_b = x[b]; \
+	x[a] = swap ? tmp_b : tmp_a; x[b] = swap ? tmp_a : tmp_b;}
+#define DG1(x,a) {ORDER(x,a,a+1)}
+#define DG2(x,a) {for(int i2 = 0; i2 < 2; i2++) {ORDER(x,a+i2,a+i2+2)} DG1(x,a) DG1(x,a+2)}
+#define DG3(x,a) {for(int i3 = 0; i3 < 4; i3++) {ORDER(x,a+i3,a+i3+4)} DG2(x,a) DG2(x,a+4)}
+#define DG4(x,a) {for(int i4 = 0; i4 < 8; i4++) {ORDER(x,a+i4,a+i4+8)} DG3(x,a) DG3(x,a+8)}
+
+layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in;
 
 struct SortList {
 	unsigned int index;
@@ -14,78 +22,79 @@ layout(std430, binding = 1) buffer sortBuffer{
 uniform uint numParticles;
 uniform uint compareDist;
 uniform uint subArraySize;
+uniform uint degree;
 
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
-	uint index_low = id & (compareDist - 1);
-	uint index_high = 2 * (id - index_low);
-	uint index = index_high + index_low;
-	uint nSwapElem = compareDist == subArraySize >> 1 ? index_high + (2 * compareDist - 1) - index_low : index_high + compareDist + index_low;
+	uint low, i, j, inc;
+	bool reverse;
 
-	if(nSwapElem < numParticles && index < numParticles)
+	switch(degree)
 	{
-		float nSwapElemDist, indexDist;
-		if((indexDist = sort[index].distance) < (nSwapElemDist = sort[nSwapElem].distance))
+		case 1:
 		{
-			uint tempIndex = sort[index].index;
-			float tempDist = indexDist;
+			low = id & (compareDist - 1);
+			i = (id << 1) - low;
+			j = i + compareDist;
 
-			sort[index].index = sort[nSwapElem].index;
-			sort[index].distance = nSwapElemDist;
+			if(i < numParticles && j < numParticles)
+			{
+				reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
 
-			sort[nSwapElem].index = tempIndex;
-			sort[nSwapElem].distance = tempDist;
+				SortList x0, x1;
+				x0 = sort[i];
+				x1 = sort[j];
+
+				bool swap = bool(int(reverse) ^ int(x0.distance < x1.distance));
+
+				sort[i] = (swap) ? x1 : x0;
+				sort[j] = (swap) ? x0 : x1;
+			}
+
+			break;
+		}
+		case 2:
+		{
+			inc = compareDist >> 1;
+			low = id & (inc - 1);
+			i = ((id - low) << 2) + low;
+			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
+			SortList x[4];
+
+			for(int k = 0; k < 4; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = -999.0;}
+			DG2(x,0);
+			for(int k = 0; k < 4; k++) sort[i + k * inc] = x[k];
+
+			break;
+		}
+		case 3:
+		{
+			inc = compareDist >> 2;
+			low = id & (inc - 1);
+			i = ((id - low) << 3) + low;
+			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
+			SortList x[8];
+
+			for(int k = 0; k < 8; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = -999.0;}
+			DG3(x,0);
+			for(int k = 0; k < 8; k++) sort[i + k * inc] = x[k];
+
+			break;
+		}
+		case 4:
+		{
+			inc = compareDist >> 3;
+			low = id & (inc - 1);
+			i = ((id - low) << 4) + low;
+			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
+			SortList x[16];
+
+			for(int k = 0; k < 16; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = -999.0;}
+			DG4(x,0);
+			for(int k = 0; k < 16; k++) sort[i + k * inc] = x[k];
+
+			break;
 		}
 	}
 }
-
-
-/*void main()
-{
-    uint id = gl_GlobalInvocationID.x;
-	uint swapId = id^compareDist;
-
-	if(id < swapId && id < numParticles && swapId < numParticles)
-	{
-		float tempDist = sort[id].distance;
-		float tempDistSwap = sort[swapId].distance;
-		uint ascending = (id / subArraySize) % 2;
-
-		if((ascending == 0 && tempDist < tempDistSwap) || (ascending != 0 && tempDist > tempDistSwap))
-		{
-			uint tempIndex = sort[id].index;
-
-			sort[id].index = sort[swapId].index;
-			sort[id].distance = tempDistSwap;
-
-			sort[swapId].index = tempIndex;
-			sort[swapId].distance = tempDist;
-		}
-	}
-}*/
-
-/*void main()
-{
-    uint id = gl_GlobalInvocationID.x;
-	uint swapId = id^compareDist;
-
-	if(id < numParticles && swapId < numParticles)
-	{
-		uint ascending = (id / subArraySize) % 2;
-		bool left = id < swapId;
-		float leftDist = left ? sort[id].distance : sort[swapId].distance;
-		float rightDist = left ? sort[swapId].distance : sort[id].distance;
-
-		if((ascending == 0 && leftDist < rightDist) || (ascending != 0 && leftDist > rightDist))
-		{
-			uint tempIndexSwap = sort[swapId].index;
-			float tempDistSwap = left ? rightDist : leftDist;
-
-			barrier();
-
-			sort[id].index = tempIndexSwap;
-			sort[id].distance = tempDistSwap;
-		}
-	}
-}*/

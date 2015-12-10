@@ -17,14 +17,16 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	pUniform = glGetUniformLocation(program, "p");
 	texDifSamplerUniform = glGetUniformLocation(program, "texDifSampler");
 	dtUniform = glGetUniformLocation(simulateComputeProgram, "dt");
-	viewPosUniform = glGetUniformLocation(simulateComputeProgram, "viewPos");
+	halfVectorUniform = glGetUniformLocation(simulateComputeProgram, "halfVector");
 	maxParticlesUniform = glGetUniformLocation(simulateComputeProgram, "maxParticles");
 	maxEmitUniform = glGetUniformLocation(emitComputeProgram, "maxEmit");
 	maxSortUniform = glGetUniformLocation(sortComputeProgram, "numParticles");
 	compareDistUniform = glGetUniformLocation(sortComputeProgram, "compareDist");
 	subArraySizeUniform = glGetUniformLocation(sortComputeProgram, "subArraySize");
+	degreeSortUniform = glGetUniformLocation(sortComputeProgram, "degree");
+	subArraySizeLocalInnerUniform = glGetUniformLocation(sortLocalInnerComputeProgram, "subArraySize");
 	maxSortLocalUniform = glGetUniformLocation(sortLocalComputeProgram, "numParticles");
-	maxSortLocalInnerUniform = glGetUniformLocation(sortLocalComputeProgram, "numParticles");
+	maxSortLocalInnerUniform = glGetUniformLocation(sortLocalInnerComputeProgram, "numParticles");
 
 	std::vector<ParticlePool> particlePool;
 	particlePool.reserve(indices);
@@ -87,18 +89,18 @@ void ParticleTechnique::draw()
 	//emit
 	//bere mrtve castice z dead bufferu a nastavuje jim kladny cas zivota
 	glUseProgram(emitComputeProgram);
-	glUniform1ui(maxEmitUniform, (unsigned int)(100000 * dt));
+	glUniform1ui(maxEmitUniform, (unsigned int)(400000 * fdt));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
-	glDispatchCompute(ceil((100000 * fdt) / 256.0), 1, 1);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glDispatchCompute(ceil((400000 * fdt) / 256.0), 1, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	//simulace
 	//hleda castice s nezapornym casem zivota, ty odsimuluje a da je do sort bufferu
 	glUseProgram(simulateComputeProgram);
 	glUniform1f(dtUniform, fdt);
-	glUniform3f(viewPosUniform, -viewPos.x, -viewPos.y, -viewPos.z);
+	glUniform3f(halfVectorUniform, -viewPos.x, -viewPos.y, -viewPos.z);
 	glUniform1ui(maxParticlesUniform, (unsigned int)indices);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
@@ -106,7 +108,7 @@ void ParticleTechnique::draw()
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 3, vbo[3]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
 	glDispatchCompute(ceil(indices / 256.0), 1, 1);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	//precteni pozice v sort counteru, aby se vedelo kolik castic se bude vykreslovat
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
@@ -118,25 +120,34 @@ void ParticleTechnique::draw()
 	glUseProgram(sortLocalComputeProgram);
 	glUniform1ui(maxSortLocalUniform, sortCounter);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
-	glDispatchCompute(ceil(sortCounter / 1024.0), 1, 1);
+	glDispatchCompute(ceil(sortCounter / 512.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	unsigned int closestPowOfTwo = 1;
 	while (closestPowOfTwo < sortCounter)
 		closestPowOfTwo *= 2;
 
-	for (unsigned int subArraySize = 2048; subArraySize <= closestPowOfTwo; subArraySize *= 2) {
-		for (unsigned int compareDist = subArraySize / 2; compareDist > 512; compareDist /= 2) {
+	for (unsigned int subArraySize = 1024, pow1 = 10; subArraySize <= closestPowOfTwo; subArraySize *= 2, pow1++) {
+		for (unsigned int compareDist = subArraySize / 2, pow2 = pow1-1; compareDist > 512; compareDist /= 2, pow2--) {
+			unsigned int deg = pow2 - 9;
+			if (deg > 4)
+				deg = deg == 5 ? 3 : 4;
 			glUseProgram(sortComputeProgram);
 			glUniform1ui(maxSortUniform, sortCounter);
 			glUniform1ui(compareDistUniform, compareDist);
 			glUniform1ui(subArraySizeUniform, subArraySize);
+			glUniform1ui(degreeSortUniform, deg);
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
-			glDispatchCompute(ceil(sortCounter / 256.0), 1, 1);
+			unsigned int size = pow(2, deg);
+			glDispatchCompute(ceil(closestPowOfTwo / (128.0 * size)), 1, 1);
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+			for (int i = 0; i < deg - 1; i++) {
+				compareDist /= 2; pow2--;
+			}
 		}
 		glUseProgram(sortLocalInnerComputeProgram);
 		glUniform1ui(maxSortLocalInnerUniform, sortCounter);
+		glUniform1ui(subArraySizeLocalInnerUniform, subArraySize);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
 		glDispatchCompute(ceil(sortCounter / 1024.0), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

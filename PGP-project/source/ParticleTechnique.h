@@ -3,6 +3,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
+#include <math.h> 
 #include "Model.h"
 
 struct ParticlePool
@@ -39,14 +40,16 @@ protected:
 	GLuint mvUniform;
 	GLuint pUniform;
 	GLuint dtUniform;
-	GLuint viewPosUniform;
+	GLuint halfVectorUniform;
 	GLuint maxParticlesUniform;
 	GLuint maxEmitUniform;
 	GLuint maxSortUniform;
 	GLuint maxSortLocalUniform;
+	GLuint degreeSortUniform;
 	GLuint maxSortLocalInnerUniform;
 	GLuint compareDistUniform;
 	GLuint subArraySizeUniform;
+	GLuint subArraySizeLocalInnerUniform;
 	GLuint texDifSamplerUniform;
 	GLuint texDif;
 	glm::mat4 p;

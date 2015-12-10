@@ -31,7 +31,7 @@ layout(binding = 3, offset = 0) uniform atomic_uint sortCounter;
 layout(binding = 4, offset = 0) uniform atomic_uint deadCounter;
 
 uniform float dt;
-uniform vec3 viewPos;
+uniform vec3 halfVector;
 uniform uint maxParticles;
 
 void main()
@@ -53,7 +53,7 @@ void main()
 			} else {
 				uint c = atomicCounterIncrement(sortCounter);
 				sort[c].index = id;
-				sort[c].distance = distance(pos, viewPos);
+				sort[c].distance = dot(halfVector, pos);
 
 				particle[id].pos.xyz = pos + vec3(0.1, 0.1, 0.1) * dt;
 				particle[id].pos.w = ttl;

@@ -2,59 +2,62 @@
 
 #define workGroupSize 1024
 
-layout(local_size_x = workGroupSize, local_size_y = 1, local_size_z = 1) in;
+#define ORDER(x,a,b) {bool swap = bool(int(reverse) ^ int(x[a].distance < x[b].distance)); \
+	SortList tmp_a = x[a]; SortList tmp_b = x[b]; \
+	x[a] = swap ? tmp_b : tmp_a; x[b] = swap ? tmp_a : tmp_b;}
+#define DG1(x,a) {ORDER(x,a,a+1)}
+#define DG2(x,a) {for(int i2 = 0; i2 < 2; i2++) {ORDER(x,a+i2,a+i2+2)} DG1(x,a) DG1(x,a+2)}
+#define DG3(x,a) {for(int i3 = 0; i3 < 4; i3++) {ORDER(x,a+i3,a+i3+4)} DG2(x,a) DG2(x,a+4)}
+#define DG4(x,a) {for(int i4 = 0; i4 < 8; i4++) {ORDER(x,a+i4,a+i4+8)} DG3(x,a) DG3(x,a+8)}
 
-shared uint sIndex[workGroupSize];
-shared float sDistance[workGroupSize];
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 struct SortList {
 	unsigned int index;
 	float distance;
 };
 
+shared SortList localSort[1024];
+
 layout(std430, binding = 1) buffer sortBuffer{
     SortList sort[];
 };
 
 uniform uint numParticles;
+uniform uint subArraySize;
 
 void main()
 {
-	uint global_id = gl_GlobalInvocationID.x;
-    uint local_id = gl_LocalInvocationID.x;
+	uint id = gl_GlobalInvocationID.x;
+	uint wgBits = 1024 - 1;
+	uint compareDist = 512 >> 1;
+	SortList x[4];
 
-	sIndex[local_id] = sort[global_id].index;
-	sDistance[local_id] = sort[global_id].distance;
-
+	uint low = id & (compareDist - 1);
+	uint i = ((id - low) << 2) + low;
+	bool reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
+		
+	for(int k = 0; k < 4; k++) {x[k] = sort[i + k * compareDist]; if((i + k * compareDist) >= numParticles) x[k].distance = -999.0;}
+	DG2(x,0);
+	for(int k = 0; k < 4; k++) localSort[(i + k * compareDist) & wgBits] = x[k];
 	barrier();
 
-	uint maxIndex = numParticles / workGroupSize != gl_WorkGroupID.x ? workGroupSize : numParticles % workGroupSize;
+	for( ; compareDist > 1; compareDist >>= 2)
+	{
+		uint low = id & (compareDist - 1);
+		uint i = ((id - low) << 2) + low;
+		reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
 
-	for (unsigned int compareDist = workGroupSize >> 1; compareDist > 0; compareDist = compareDist >> 1) {
-		uint index_low = local_id & (compareDist - 1);
-		uint index_high = 2 * (local_id - index_low);
-		uint index = index_high + index_low;
-		uint nSwapElem = index_high + compareDist + index_low;
-
-		if(nSwapElem < maxIndex && index < maxIndex)
-		{
-			float nSwapElemDist, indexDist;
-			if((indexDist = sDistance[index]) < (nSwapElemDist = sDistance[nSwapElem]))
-			{
-				uint tempIndex = sIndex[index];
-				float tempDist = indexDist;
-
-				sIndex[index] = sIndex[nSwapElem];
-				sDistance[index] = nSwapElemDist;
-
-				sIndex[nSwapElem] = tempIndex;
-				sDistance[nSwapElem] = tempDist;
-			}
-		}
-
+		for(int k = 0; k < 4; k++) {x[k] = localSort[(i + k * compareDist) & wgBits]; if((i + k * compareDist) >= numParticles) x[k].distance = -999.0;}
+		DG2(x,0);
+		barrier();
+		for(int k = 0; k < 4; k++) localSort[(i + k * compareDist) & wgBits] = x[k];
 		barrier();
 	}
 
-	sort[global_id].index = sIndex[local_id] ;
-	sort[global_id].distance = sDistance[local_id];
+	i = id << 2;
+	reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
+	for(int k = 0; k < 4; k++) {x[k] = localSort[(i + k) & wgBits]; if((i + k) >= numParticles) x[k].distance = -999.0;}
+	DG2(x,0);
+	for(int k = 0; k < 4; k++) sort[i + k] = x[k];
 }
