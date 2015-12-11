@@ -27,6 +27,7 @@ public:
 	glm::mat4 getProjection();
 	glm::mat4 getView();
 	glm::vec3 getPos();
+	glm::vec3 getDir();
 	glm::vec2 getRotation();
 	void setMode(int mode);
 };

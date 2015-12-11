@@ -25,6 +25,20 @@ void ParticleSystemRenderer::render(Camera &cam, std::vector<Light> &lights, glm
 	technique->setViewPos(cam.getPos());
 	technique->bindTexDif(0);
 
+	glm::vec3 halfVector;
+	bool flipped;
+
+	if (glm::dot(cam.getDir(), lights[0].dir) > 0) {
+		halfVector = glm::normalize(cam.getDir() + lights[0].dir);
+		flipped = false;
+	} 
+	else {
+		halfVector = glm::normalize(-cam.getDir() + lights[0].dir);
+		flipped = true;
+	}
+
+	technique->setHalfVector(halfVector, flipped);
+
 	glm::mat4 M = glm::mat4(1.0);
 	M = glm::translate(M, pos);
 

@@ -101,6 +101,8 @@
     <None Include="resource\basic.fs" />
     <None Include="resource\basic.vs" />
     <None Include="resource\emit_particle.comp" />
+    <None Include="resource\grid_particle_divide.comp" />
+    <None Include="resource\grid_particle_find_start.comp" />
     <None Include="resource\simulate_particle.comp" />
     <None Include="resource\particle.fs" />
     <None Include="resource\particle.gs" />

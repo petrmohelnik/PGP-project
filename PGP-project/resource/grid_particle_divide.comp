@@ -1,0 +1,43 @@
+#version 450
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+struct ParticlePool {
+	vec4 pos;
+};
+
+struct GridList {
+	uint cell_id;
+	uint particle_id;
+};
+
+layout(std430, binding = 0) buffer particleBuffer{
+    ParticlePool particle[];
+};
+
+layout(std430, binding = 5) buffer gridBuffer{
+    GridList grid[];
+};
+
+layout(binding = 7, offset = 0) uniform atomic_uint gridCounter;
+
+uniform float size;
+uniform float h;
+uniform uint maxParticles;
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+	if(id < maxParticles)
+	{
+		vec4 posTtl = particle[id].pos;
+		vec3 pos = posTtl.xyz;
+		float ttl = posTtl.w;
+
+		if(ttl > 0.0 && abs(pos.x) <= (size/2) && pos.y <= size && abs(pos.z) <= (size/2)) {
+			uint c = atomicCounterIncrement(gridCounter);
+			grid[c].cell_id = ((pos.x + size/2) / h) + (pos.y) / h) * (size/h) + ((pos.z + size/2) / h) * (size/h) * (size/h);
+			grid[c].particle_id = id;
+		}
+	}
+}

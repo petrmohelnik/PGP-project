@@ -13,7 +13,8 @@
 struct Light
 {
 	glm::vec3 pos;
-	Light(glm::vec3 p) : pos(p) {}
+	glm::vec3 dir;
+	Light(glm::vec3 p, glm::vec3 d) : pos(p), dir(d) {}
 };
 
 class Scene

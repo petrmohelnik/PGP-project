@@ -100,7 +100,7 @@ void ParticleTechnique::draw()
 	//hleda castice s nezapornym casem zivota, ty odsimuluje a da je do sort bufferu
 	glUseProgram(simulateComputeProgram);
 	glUniform1f(dtUniform, fdt);
-	glUniform3f(halfVectorUniform, -viewPos.x, -viewPos.y, -viewPos.z);
+	glUniform3f(halfVectorUniform, halfVector.x, halfVector.y, halfVector.z);
 	glUniform1ui(maxParticlesUniform, (unsigned int)indices);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
@@ -218,4 +218,10 @@ void ParticleTechnique::bindTexDif(int t)
 	glActiveTexture(GL_TEXTURE0 + t);
 	glBindTexture(GL_TEXTURE_2D, texDif);
 	texDifSampler = t;
+}
+
+void ParticleTechnique::setHalfVector(glm::vec3 halfVec, bool flip)
+{
+	halfVector = halfVec;
+	flippedHalfVector = flip;
 }

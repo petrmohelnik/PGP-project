@@ -55,6 +55,8 @@ protected:
 	glm::mat4 p;
 	glm::mat4 m;
 	glm::mat4 v;
+	glm::vec3 halfVector;
+	bool flippedHalfVector;
 	int dt;
 	glm::vec3 viewPos;
 	int texDifSampler;
@@ -66,6 +68,7 @@ public:
 	void setP(glm::mat4 mat);
 	void setDt(int t);
 	void setViewPos(glm::vec3 pos);
+	void setHalfVector(glm::vec3 halfVec, bool flip);
 	void bindTexDif(int t);
 };
 

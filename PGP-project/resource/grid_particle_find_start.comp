@@ -1,0 +1,31 @@
+#version 450
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+struct GridList {
+	uint cell_id;
+	uint particle_id;
+};
+
+struct startIndexList {
+	uint start;
+};
+
+layout(std430, binding = 5) buffer gridBuffer{
+    GridList grid[];
+};
+
+layout(std430, binding = 6) buffer startIndexBuffer{
+    startIndexList startIndex[];
+};
+
+layout(binding = 7, offset = 0) uniform atomic_uint gridCounter;
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+	if(id < gridCounter)
+	{
+
+	}
+}

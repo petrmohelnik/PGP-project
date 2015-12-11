@@ -127,5 +127,11 @@
     <None Include="resource\sort_particle_local_inner.comp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource\grid_particle_divide.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\grid_particle_find_start.comp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

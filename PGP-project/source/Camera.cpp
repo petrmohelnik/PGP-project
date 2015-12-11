@@ -64,6 +64,16 @@ glm::vec3 Camera::getPos()
 	}
 }
 
+glm::vec3 Camera::getDir()
+{
+	glm::vec3 dir;
+	dir = glm::normalize(glm::rotate(glm::vec3(0.0f, 0.0f, 1.0f), rot.y, glm::vec3(1.0f, 0.0f, 0.0f)));
+	dir = glm::normalize(glm::rotate(dir, rot.x, glm::vec3(0.0f, 1.0f, 0.0f)));
+	dir.z = -dir.z;
+
+	return dir;
+}
+
 glm::vec2 Camera::getRotation()
 {
 	return rot;
