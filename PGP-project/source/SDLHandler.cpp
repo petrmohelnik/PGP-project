@@ -4,6 +4,7 @@ SDLHandler::SDLHandler(int w, int h)
 {
 	width = w;
 	height = h;
+  lastFPS = 0;
 }
 
 bool SDLHandler::init()
@@ -57,13 +58,25 @@ void SDLHandler::mainLoop(Application &app)
 		{
 			app.sdlEvent(event);
 		}
-		//	if (event.key.keysym.sym == SDLK_ESCAPE) 
-		//		break; //konec kdyz ESC
+		if (event.key.keysym.sym == SDLK_ESCAPE) 
+				break;
+    if (event.type == SDL_QUIT)
+        break;
 
 		Uint32 tics = SDL_GetTicks();
 		if (lastTics == 0)
 			lastTics = tics;
 		Uint32 dt = tics - lastTics;
+
+    Uint32 fps = static_cast<Uint32>((1.0f / static_cast<float>(dt) * 1000.0f));
+    if((fps < (lastFPS - 5)) || (fps > (lastFPS + 5))) // rozsah pro odstraneni blikani textu
+    {
+        std::stringstream ss;
+        ss << "Smoke, FPS: " << fps;
+        SDL_SetWindowTitle(mainwindow, ss.str().c_str());
+        lastFPS = fps;
+    }
+
 		lastTics = tics;
 
 		app.display(dt);
