@@ -57,7 +57,8 @@ int main(int argc, char **argv)
 	Application app;
 	FileSystem f;
 	Shader s;
-	string strVs, strFs, strPVs, strPGs, strPFs, strEmitPCs, strSortPCs, strSortLocalPCs, strSortLocalInnerPCs, strSimulatePCs;
+	string strVs, strFs, strPVs, strPGs, strPFs, strEmitPCs, strSortPCs, strSortLocalPCs,
+		strSortLocalInnerPCs, strSimulatePCs, strGridDividePCs, strGridFindStartPCs;
 	if (!f.loadFile("resource/basic.vs", strVs)) {
 		cin.get();
 		return -1;
@@ -98,7 +99,16 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
-	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPCs, SortLocalPCs, SortLocalInnerPCs;
+	if (!f.loadFile("resource/grid_particle_divide.comp", strGridDividePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/grid_particle_find_start.comp", strGridFindStartPCs)) {
+		cin.get();
+		return -1;
+	}
+	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPCs, SortLocalPCs, SortLocalInnerPCs,
+		GridDividePCs, GridParticleStartPCs;
 	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) {
 		cin.get();
 		return -1;
@@ -167,7 +177,23 @@ int main(int argc, char **argv)
 		cin.get();
 		return -1;
 	}
-	
+	if (!s.compileShader(strGridDividePCs.c_str(), GL_COMPUTE_SHADER, "grid_particle_divide_compute", GridDividePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(GridDividePCs, "grid_particle_divide_compute_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strGridFindStartPCs.c_str(), GL_COMPUTE_SHADER, "grid_particle_find_start_compute", GridParticleStartPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(GridParticleStartPCs, "grid_particle_start_compute_program")) {
+		cin.get();
+		return -1;
+	}
+
 	Model m;
 	std::shared_ptr<Mesh> sphereMesh(new Mesh);
 	sphereMesh->createSphere(0.3, 108);
@@ -195,10 +221,11 @@ int main(int argc, char **argv)
 	particlesMesh->addMaterial(particleMat);
 	particles.addMesh(particlesMesh);
 	std::shared_ptr<ParticleSystemRenderer> ParticleSystemRenderer(new ParticleSystemRenderer(glm::vec3(0.0)));
-	if (!ParticleSystemRenderer->initRenderer(particles, 600000, s.getProgram("particle_program"),
+	if (!ParticleSystemRenderer->initRenderer(particles, 520000, s.getProgram("particle_program"),
 		s.getProgram("simulate_particle_compute_program"), s.getProgram("emit_particle_compute_program"),
 		s.getProgram("sort_particle_compute_program"), s.getProgram("sort_particle_local_compute_program"),
-		s.getProgram("sort_particle_local_inner_compute_program"))) { 
+		s.getProgram("sort_particle_local_inner_compute_program"),
+		s.getProgram("grid_particle_divide_compute_program"), s.getProgram("grid_particle_start_compute_program"))) {
 		cin.get();
 		return -1;
 	}

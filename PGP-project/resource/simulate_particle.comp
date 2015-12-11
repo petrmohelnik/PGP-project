@@ -30,6 +30,23 @@ layout(std430, binding = 2) buffer deadBuffer{
 layout(binding = 3, offset = 0) uniform atomic_uint sortCounter;
 layout(binding = 4, offset = 0) uniform atomic_uint deadCounter;
 
+struct GridList {
+	uint particle_id;
+	float cell_id;
+};
+
+struct StartIndexList {
+	uint start;
+};
+
+layout(std430, binding = 5) buffer gridBuffer{
+    GridList grid[];
+};
+
+layout(std430, binding = 6) buffer startIndexBuffer{
+    StartIndexList startIndex[];
+};
+
 uniform float dt;
 uniform vec3 halfVector;
 uniform uint maxParticles;
@@ -39,7 +56,8 @@ void main()
     uint id = gl_GlobalInvocationID.x;
 	if(id < maxParticles)
 	{
-		vec4 posTtl = particle[id].pos;
+		GridList p = grid[id];
+		vec4 posTtl = particle[p.particle_id].pos;
 		vec3 pos = posTtl.xyz;
 		float ttl = posTtl.w;
 
@@ -48,15 +66,15 @@ void main()
 
 			if(ttl <= 0.0) {
 				uint c = atomicCounterDecrement(deadCounter);
-				dead[c].index = id;
-				particle[id].pos.w = ttl;
+				dead[c].index = p.particle_id;
+				particle[p.particle_id].pos.w = ttl;
 			} else {
 				uint c = atomicCounterIncrement(sortCounter);
-				sort[c].index = id;
+				sort[c].index = p.particle_id;
 				sort[c].distance = dot(halfVector, pos);
 
-				particle[id].pos.xyz = pos + vec3(0.1, 0.1, 0.1) * dt;
-				particle[id].pos.w = ttl;
+				particle[p.particle_id].pos.xyz = pos + vec3(0.1, 0.1, 0.1) * dt;
+				particle[p.particle_id].pos.w = ttl;
 			}
 		}
 	}

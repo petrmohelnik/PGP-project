@@ -37,7 +37,7 @@ void main()
 	uint i = ((id - low) << 2) + low;
 	bool reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
 		
-	for(int k = 0; k < 4; k++) {x[k] = sort[i + k * compareDist]; if((i + k * compareDist) >= numParticles) x[k].distance = -999.0;}
+	for(int k = 0; k < 4; k++) {x[k] = sort[i + k * compareDist]; if((i + k * compareDist) >= numParticles) x[k].distance = 9999.0;}
 	DG2(x,0);
 	for(int k = 0; k < 4; k++) localSort[(i + k * compareDist) & wgBits] = x[k];
 	barrier();
@@ -46,9 +46,9 @@ void main()
 	{
 		uint low = id & (compareDist - 1);
 		uint i = ((id - low) << 2) + low;
-		reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
+		reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
 
-		for(int k = 0; k < 4; k++) {x[k] = localSort[(i + k * compareDist) & wgBits]; if((i + k * compareDist) >= numParticles) x[k].distance = -999.0;}
+		for(int k = 0; k < 4; k++) {x[k] = localSort[(i + k * compareDist) & wgBits]; if((i + k * compareDist) >= numParticles) x[k].distance = 9999.0;}
 		DG2(x,0);
 		barrier();
 		for(int k = 0; k < 4; k++) localSort[(i + k * compareDist) & wgBits] = x[k];
@@ -56,8 +56,8 @@ void main()
 	}
 
 	i = id << 2;
-	reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
-	for(int k = 0; k < 4; k++) {x[k] = localSort[(i + k) & wgBits]; if((i + k) >= numParticles) x[k].distance = -999.0;}
+	reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
+	for(int k = 0; k < 4; k++) {x[k] = localSort[(i + k) & wgBits]; if((i + k) >= numParticles) x[k].distance = 9999.0;}
 	DG2(x,0);
 	for(int k = 0; k < 4; k++) sort[i + k] = x[k];
 }

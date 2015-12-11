@@ -25,11 +25,22 @@ struct DeadList
 	DeadList(GLuint i) : index(i) {}
 };
 
+struct GridList {
+	GLuint particle_id;
+	float cell_id;
+	GridList(float c, GLuint p) : cell_id(c), particle_id(p) {}
+};
+
+struct StartIndexList {
+	GLuint start;
+	StartIndexList(GLuint s) : start(s) {}
+};
+
 class ParticleTechnique
 {
 protected:
 	GLuint vao;
-	GLuint vbo[5]; //pool, sortList, deadList, sortCounter, deadCounter
+	GLuint vbo[8]; //pool, sortList, deadList, sortCounter, deadCounter, gridList, startIndexList, gridCounter
 	int indices; //amount of indices in vao
 	GLuint program;
 	GLuint simulateComputeProgram;
@@ -37,6 +48,8 @@ protected:
 	GLuint sortComputeProgram;
 	GLuint sortLocalComputeProgram;
 	GLuint sortLocalInnerComputeProgram;
+	GLuint gridDivideComputeProgram;
+	GLuint gridFindStartComputeProgram;
 	GLuint mvUniform;
 	GLuint pUniform;
 	GLuint dtUniform;
@@ -51,6 +64,9 @@ protected:
 	GLuint subArraySizeUniform;
 	GLuint subArraySizeLocalInnerUniform;
 	GLuint texDifSamplerUniform;
+	GLuint maxParticlesGridDivideUniform;
+	GLuint sizeGridDivideUniform;
+	GLuint hGridDivideUniform;
 	GLuint texDif;
 	glm::mat4 p;
 	glm::mat4 m;
@@ -61,8 +77,10 @@ protected:
 	glm::vec3 viewPos;
 	int texDifSampler;
 public:
-	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP);
+	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, 
+		GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP);
 	void draw();
+	void sort(GLuint sortCounter, GLuint buffer);
 	void setM(glm::mat4 mat);
 	void setV(glm::mat4 mat);
 	void setP(glm::mat4 mat);

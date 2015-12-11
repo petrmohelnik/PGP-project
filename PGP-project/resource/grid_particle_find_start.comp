@@ -3,11 +3,11 @@
 layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 struct GridList {
-	uint cell_id;
 	uint particle_id;
+	float cell_id;
 };
 
-struct startIndexList {
+struct StartIndexList {
 	uint start;
 };
 
@@ -16,7 +16,7 @@ layout(std430, binding = 5) buffer gridBuffer{
 };
 
 layout(std430, binding = 6) buffer startIndexBuffer{
-    startIndexList startIndex[];
+    StartIndexList startIndex[];
 };
 
 layout(binding = 7, offset = 0) uniform atomic_uint gridCounter;
@@ -24,8 +24,14 @@ layout(binding = 7, offset = 0) uniform atomic_uint gridCounter;
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
-	if(id < gridCounter)
+	if(id < atomicCounter(gridCounter))
 	{
-
+		if(id == 0) {
+			startIndex[uint(grid[id].cell_id)].start = 0;
+		}
+		else {
+			if(uint(grid[id-1].cell_id) != uint(grid[id].cell_id))
+				startIndex[uint(grid[id].cell_id)].start = id;
+		}
 	}
 }

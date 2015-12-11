@@ -40,7 +40,7 @@ void main()
 
 			if(i < numParticles && j < numParticles)
 			{
-				reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
+				reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
 
 				SortList x0, x1;
 				x0 = sort[i];
@@ -59,10 +59,10 @@ void main()
 			inc = compareDist >> 1;
 			low = id & (inc - 1);
 			i = ((id - low) << 2) + low;
-			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
+			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
 			SortList x[4];
 
-			for(int k = 0; k < 4; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = -999.0;}
+			for(int k = 0; k < 4; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = 9999.0;}
 			DG2(x,0);
 			for(int k = 0; k < 4; k++) sort[i + k * inc] = x[k];
 
@@ -76,7 +76,7 @@ void main()
 			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
 			SortList x[8];
 
-			for(int k = 0; k < 8; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = -999.0;}
+			for(int k = 0; k < 8; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = 9999.0;}
 			DG3(x,0);
 			for(int k = 0; k < 8; k++) sort[i + k * inc] = x[k];
 
@@ -87,10 +87,10 @@ void main()
 			inc = compareDist >> 3;
 			low = id & (inc - 1);
 			i = ((id - low) << 4) + low;
-			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) != 0 : (subArraySize & i) == 0;
+			reverse = (numParticles / subArraySize) % 2 == 0 || numParticles == subArraySize ? (subArraySize & i) == 0 : (subArraySize & i) != 0;
 			SortList x[16];
 
-			for(int k = 0; k < 16; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = -999.0;}
+			for(int k = 0; k < 16; k++) {x[k] = sort[i + k * inc]; if((i + k * inc) >= numParticles) x[k].distance = 9999.0;}
 			DG4(x,0);
 			for(int k = 0; k < 16; k++) sort[i + k * inc] = x[k];
 

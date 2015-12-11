@@ -6,14 +6,24 @@ struct ParticlePool {
 	vec4 pos;
 };
 
+struct DeadList {
+	unsigned int index;
+};
+
 struct GridList {
-	uint cell_id;
 	uint particle_id;
+	float cell_id;
 };
 
 layout(std430, binding = 0) buffer particleBuffer{
     ParticlePool particle[];
 };
+
+layout(std430, binding = 2) buffer deadBuffer{
+    DeadList dead[];
+};
+
+layout(binding = 4, offset = 0) uniform atomic_uint deadCounter;
 
 layout(std430, binding = 5) buffer gridBuffer{
     GridList grid[];
@@ -34,10 +44,19 @@ void main()
 		vec3 pos = posTtl.xyz;
 		float ttl = posTtl.w;
 
-		if(ttl > 0.0 && abs(pos.x) <= (size/2) && pos.y <= size && abs(pos.z) <= (size/2)) {
-			uint c = atomicCounterIncrement(gridCounter);
-			grid[c].cell_id = ((pos.x + size/2) / h) + (pos.y) / h) * (size/h) + ((pos.z + size/2) / h) * (size/h) * (size/h);
-			grid[c].particle_id = id;
+		if(ttl > 0.0) {
+			uint res = uint(size / h);
+			float halfSize = size / 2.0;
+			if(abs(pos.x) <= halfSize && pos.y <= size && pos.y >= 0.0 && abs(pos.z) <= halfSize) {
+				uint c = atomicCounterIncrement(gridCounter);
+				grid[c].cell_id = float(floor((pos.x + halfSize) / h) + floor(pos.y / h) * res + floor((pos.z + halfSize) / h) * res * res);
+				grid[c].particle_id = id;
+			}
+			else {
+				uint c = atomicCounterDecrement(deadCounter);
+				dead[c].index = id;
+				particle[id].pos.w = -1.0;
+			}
 		}
 	}
 }
