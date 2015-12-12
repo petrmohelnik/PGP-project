@@ -58,7 +58,8 @@ int main(int argc, char **argv)
 	FileSystem f;
 	Shader s;
 	string strVs, strFs, strPVs, strPGs, strPFs, strEmitPCs, strSortPCs, strSortLocalPCs,
-		strSortLocalInnerPCs, strSimulatePCs, strGridDividePCs, strGridFindStartPCs;
+		strSortLocalInnerPCs, strSimulatePCs, strGridDividePCs, strGridFindStartPCs,
+		strSimulateDensityPCs, strSimulatePressurePCs, strSimulateForcePCs;
 	if (!f.loadFile("resource/basic.vs", strVs)) {
 		cin.get();
 		return -1;
@@ -80,6 +81,18 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	if (!f.loadFile("resource/simulate_particle.comp", strSimulatePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/simulate_particle_density.comp", strSimulateDensityPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/simulate_particle_pressure.comp", strSimulatePressurePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!f.loadFile("resource/simulate_particle_force.comp", strSimulateForcePCs)) {
 		cin.get();
 		return -1;
 	}
@@ -108,7 +121,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPCs, SortLocalPCs, SortLocalInnerPCs,
-		GridDividePCs, GridParticleStartPCs;
+		GridDividePCs, GridParticleStartPCs, SimulateDensityPCs, SimulatePressurePCs, SimulateForcePCs;
 	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) {
 		cin.get();
 		return -1;
@@ -142,6 +155,30 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	if (!s.linkProgram(SimulatePCs, "simulate_particle_compute_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strSimulateDensityPCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_density_compute", SimulateDensityPCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(SimulateDensityPCs, "simulate_particle_density_compute_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strSimulatePressurePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_pressure_compute", SimulatePressurePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(SimulatePressurePCs, "simulate_particle_pressure_compute_program")) {
+		cin.get();
+		return -1;
+	}
+	if (!s.compileShader(strSimulateForcePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_force_compute", SimulateForcePCs)) {
+		cin.get();
+		return -1;
+	}
+	if (!s.linkProgram(SimulateForcePCs, "simulate_particle_force_compute_program")) {
 		cin.get();
 		return -1;
 	}
@@ -225,7 +262,9 @@ int main(int argc, char **argv)
 		s.getProgram("simulate_particle_compute_program"), s.getProgram("emit_particle_compute_program"),
 		s.getProgram("sort_particle_compute_program"), s.getProgram("sort_particle_local_compute_program"),
 		s.getProgram("sort_particle_local_inner_compute_program"),
-		s.getProgram("grid_particle_divide_compute_program"), s.getProgram("grid_particle_start_compute_program"))) {
+		s.getProgram("grid_particle_divide_compute_program"), s.getProgram("grid_particle_start_compute_program"),
+		s.getProgram("simulate_particle_density_compute_program"), s.getProgram("simulate_particle_pressure_compute_program"),
+		s.getProgram("simulate_particle_force_compute_program"))) {
 		cin.get();
 		return -1;
 	}

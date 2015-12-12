@@ -1,0 +1,123 @@
+#version 450
+
+#define PI 3.141592
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+struct ParticlePool {
+	vec4 pos; //w = ttl
+	vec4 velocity; //w=density
+	vec4 force; //w=pressure
+};
+
+layout(std430, binding = 0) buffer particleBuffer{
+    ParticlePool particle[];
+};
+
+struct GridList {
+	uint particle_id;
+	float cell_id;
+};
+
+struct StartIndexList {
+	uint start;
+};
+
+layout(std430, binding = 5) buffer gridBuffer{
+    GridList grid[];
+};
+
+layout(std430, binding = 6) buffer startIndexBuffer{
+    StartIndexList startIndex[];
+};
+
+uniform uint maxParticles;
+uniform float h;
+uniform uint gridMaxIndex;
+uniform uint gridSize;
+uniform float mass;
+
+float wPoly6(vec3 r)
+{
+	float abs_r = length(r);
+	if(abs_r >= 0 && abs_r <= h)
+	{
+		return (315.0/(64*PI*pow(h,9)))*pow(h*h-abs_r*abs_r,3);
+	}
+	else
+		return 0.0;
+}
+
+float density(GridList p)
+{
+	int cellId = int(p.cell_id);
+	uint i = 0;
+	vec3 p_i_pos = particle[p.particle_id].pos.xyz;
+	float dens = 0;
+	int gridSize2 = int(gridSize*gridSize);
+	GridList grid_i;
+	const int indices[13] = {
+		cellId + 1,
+		cellId - 1 + int(gridSize),
+		cellId     + int(gridSize),
+		cellId + 1 + int(gridSize),
+		cellId - 1 - int(gridSize) + gridSize2,
+		cellId     - int(gridSize) + gridSize2,
+		cellId + 1 - int(gridSize) + gridSize2,
+		cellId - 1                 + gridSize2,
+		cellId                     + gridSize2,
+		cellId + 1                 + gridSize2,
+		cellId - 1 + int(gridSize) + gridSize2,
+		cellId     + int(gridSize) + gridSize2,
+		cellId + 1 + int(gridSize) + gridSize2,
+	};
+
+	//prvni bunka
+	i = startIndex[cellId].start;
+	grid_i = grid[i];
+	while(int(grid_i.cell_id) == cellId) {
+		if(grid_i.particle_id != p.particle_id) {
+			float d = mass * wPoly6(particle[grid_i.particle_id].pos.xyz - p_i_pos);
+			dens += d;
+		}
+		i++;
+		if(i > maxParticles)
+			break;
+		grid_i = grid[i];
+	}
+
+	//dalsi bunky
+	for(int c = 0; c < 13; c++)
+	{
+		int index = indices[c];
+		if(index >= 0 && index < gridMaxIndex) {
+			i = startIndex[index].start;
+
+			if(i != 1048576) {
+				grid_i = grid[i];
+				while(int(grid_i.cell_id) == index) {
+					float d = mass * wPoly6(particle[grid_i.particle_id].pos.xyz - p_i_pos);
+					dens += d;
+					particle[grid_i.particle_id].velocity.w += d;
+					i++;
+					if(i >= maxParticles)
+						break;
+					grid_i = grid[i];
+				}
+			}
+		}
+	}
+
+	return dens;
+}
+
+void main()
+{
+    uint id = gl_GlobalInvocationID.x;
+	if(id < maxParticles)
+	{
+		GridList p = grid[id];
+
+		particle[p.particle_id].velocity.w += density(p);
+	}
+}

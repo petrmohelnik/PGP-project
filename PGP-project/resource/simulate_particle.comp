@@ -1,9 +1,13 @@
 #version 450
 
+#define PI 3.141592
+
 layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 struct ParticlePool {
-	vec4 pos;
+	vec4 pos; //w = ttl
+	vec4 velocity; //w=density
+	vec4 force; //w=pressure
 };
 
 struct SortList {
@@ -50,6 +54,42 @@ layout(std430, binding = 6) buffer startIndexBuffer{
 uniform float dt;
 uniform vec3 halfVector;
 uniform uint maxParticles;
+uniform float h;
+uniform uint gridMaxIndex;
+uniform uint gridSize;
+
+float wPoly6(vec3 r)
+{
+	float abs_r = length(r);
+	if(abs_r >= 0 && abs_r <= h)
+	{
+		return (315.0/(64*PI*pow(h,9)))*pow(h*h-abs_r*abs_r,3);
+	}
+	else
+		return 0.0;
+}
+
+float wSpiky(vec3 r)
+{
+	float abs_r = length(r);
+	if(abs_r >= 0 && abs_r <= h)
+	{
+		return (15.0/(PI*pow(h,6)))*pow(h-abs_r,3);
+	}
+	else
+		return 0.0;
+}
+
+float wViscosity(vec3 r)
+{
+	float abs_r = length(r);
+	if(abs_r >= 0 && abs_r <= h)
+	{
+		return (15.0/(2*PI*pow(h,3)))*(-(pow(abs_r,3)/(2*pow(h,3))) + (abs_r*abs_r)/(h*h) + h/(2*abs_r) - 1.0);
+	}
+	else
+		return 0.0;
+}
 
 void main()
 {

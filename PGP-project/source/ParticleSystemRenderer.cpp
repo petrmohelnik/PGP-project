@@ -7,7 +7,8 @@ ParticleSystemRenderer::ParticleSystemRenderer(glm::vec3 position)
 }
 
 bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP,
-	GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP)
+	GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+	GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP)
 {
 	if (m.getMeshesSize() < 1) {
 		std::cout << "ERROR: Model is empty!";
@@ -15,7 +16,8 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 	}
 
 	technique->init(*(m.getMeshes()[0]), count, p, simulateComputeP, emitComputeP, sortComputeP, sortLocalComputeP, 
-		sortLocalInnerComputeP, gridDivideComputeP, gridFindStartComputeP);
+		sortLocalInnerComputeP, gridDivideComputeP, gridFindStartComputeP,
+		simulateDensityComputeP, simulatePressureComputeP, simulateForceComputeP);
 	return true;
 }
 

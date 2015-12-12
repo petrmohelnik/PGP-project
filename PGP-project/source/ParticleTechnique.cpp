@@ -1,7 +1,8 @@
 #include "ParticleTechnique.h"
 
 void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, 
-	GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP)
+	GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+	GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP)
 {
 	program = p;
 	simulateComputeProgram = simulateComputeP;
@@ -11,6 +12,9 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	sortLocalInnerComputeProgram = sortLocalInnerComputeP;
 	gridDivideComputeProgram = gridDivideComputeP;
 	gridFindStartComputeProgram = gridFindStartComputeP;
+	simulateDensityComputeProgram = simulateDensityComputeP;
+	simulatePressureComputeProgram = simulatePressureComputeP;
+	simulateForceComputeProgram = simulateForceComputeP;
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(8, vbo);
@@ -22,6 +26,9 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	dtUniform = glGetUniformLocation(simulateComputeProgram, "dt");
 	halfVectorUniform = glGetUniformLocation(simulateComputeProgram, "halfVector");
 	maxParticlesUniform = glGetUniformLocation(simulateComputeProgram, "maxParticles");
+	hGridSimulateUniform = glGetUniformLocation(simulateComputeProgram, "h");
+	gridMaxIndexUniform = glGetUniformLocation(simulateComputeProgram, "gridMaxIndex");
+	gridSizeSimulateUniform = glGetUniformLocation(simulateComputeProgram, "gridSize");
 	maxEmitUniform = glGetUniformLocation(emitComputeProgram, "maxEmit");
 	maxSortUniform = glGetUniformLocation(sortComputeProgram, "numParticles");
 	compareDistUniform = glGetUniformLocation(sortComputeProgram, "compareDist");
@@ -33,11 +40,19 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	maxParticlesGridDivideUniform = glGetUniformLocation(gridDivideComputeProgram, "maxParticles");
 	sizeGridDivideUniform = glGetUniformLocation(gridDivideComputeProgram, "size");
 	hGridDivideUniform = glGetUniformLocation(gridDivideComputeProgram, "h");
+	maxParticlesDensityUniform = glGetUniformLocation(simulateDensityComputeProgram, "maxParticles");
+	hGridSimulateDensityUniform = glGetUniformLocation(simulateDensityComputeProgram, "hGridSimulate");
+	gridMaxIndexDensityUniform = glGetUniformLocation(simulateDensityComputeProgram, "gridMaxIndex");
+	gridSizeSimulateDensityUniform = glGetUniformLocation(simulateDensityComputeProgram, "gridSize");
+	massSimulateDensityUniform = glGetUniformLocation(simulateDensityComputeProgram, "mass");
+	gasConstantPressureUniform = glGetUniformLocation(simulatePressureComputeProgram, "gasConstant");
+	restDensityPressureUniform = glGetUniformLocation(simulatePressureComputeProgram, "restDensity");
 
 	std::vector<ParticlePool> particlePool;
 	particlePool.reserve(indices);
 	for (int i = 0; i < indices; i++) {
-		particlePool.push_back(ParticlePool(glm::vec4((((double)rand()) / RAND_MAX) * 4 - 2, (((double)rand()) / RAND_MAX) * 4, (((double)rand()) / RAND_MAX) * 4 - 2, -1.0)));
+		particlePool.push_back(ParticlePool(glm::vec4((((double)rand()) / RAND_MAX) * 4 - 2, (((double)rand()) / RAND_MAX) * 4, (((double)rand()) / RAND_MAX) * 4 - 2, -1.0),
+			glm::vec4(0), glm::vec4(0)));
 	}
 
 	//obsahuje castice - jejich pozici a cas zivota
@@ -86,11 +101,11 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	glBufferData(GL_ARRAY_BUFFER, gridList.size() * sizeof(GridList), &(gridList[0]), GL_STATIC_DRAW);
 
 	std::vector<StartIndexList> startIndexList;
-	startIndexList.reserve(indices);
-	for (unsigned int i = 0; i < indices; i++) {
+	startIndexList.reserve(pow((GRID_SIZE / GRID_H), 3));
+	for (unsigned int i = 0; i < pow((GRID_SIZE / GRID_H), 3); i++) {
 		startIndexList.push_back(StartIndexList(0));
 	}
-	//rozrazeni castic do mrizky
+	//pocatecni indexy v serazenem poli s indexy do mrizky
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[6]);
 	glBufferData(GL_ARRAY_BUFFER, startIndexList.size() * sizeof(StartIndexList), &(startIndexList[0]), GL_STATIC_DRAW);
 
@@ -160,23 +175,25 @@ void ParticleTechnique::draw()
 	//emit
 	//bere mrtve castice z dead bufferu a nastavuje jim kladny cas zivota
 	glUseProgram(emitComputeProgram);
-	glUniform1ui(maxEmitUniform, (unsigned int)(400000 * fdt));
+	glUniform1ui(maxEmitUniform, (unsigned int)(200000 * fdt));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
-	glDispatchCompute(ceil((400000 * fdt) / 256.0), 1, 1);
+	glDispatchCompute(ceil((200000 * fdt) / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	//grid divide
 	//rozdeleni castic podle pozice do mrizky, kdyz vyleze castice mimo, tak ji zabije
+	//dale incializuje pole rpo pocatecni indexy
 	glUseProgram(gridDivideComputeProgram);
 	glUniform1ui(maxParticlesGridDivideUniform, (unsigned int)indices);
-	glUniform1f(sizeGridDivideUniform, 6.0);
-	glUniform1f(hGridDivideUniform, 0.6);
+	glUniform1f(sizeGridDivideUniform, GRID_SIZE);
+	glUniform1f(hGridDivideUniform, GRID_H);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 7, vbo[7]);
 	glDispatchCompute(ceil(indices / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
@@ -190,6 +207,20 @@ void ParticleTechnique::draw()
 	//serazeni gridListu podle indexu do mrizky
 	sort(gridCounter, vbo[5]);
 
+	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[5]);
+	GridList *ptr3 = (GridList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GridList), GL_MAP_READ_BIT);
+	std::vector<float> sortedList;
+	for (int i = 0; i < gridCounter; i++) {
+		sortedList.push_back(ptr3[i].cell_id);
+	}
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+	float prevDist = -10000.0;
+	for (int i = 0; i < gridCounter; i++) {
+		if (sortedList[i] < prevDist)
+			i = i;
+		prevDist = sortedList[i];
+	}*/
+
 	//grid find start
 	//najde prvni indexy zacatku bucketu jednotlivych voxelu
 	glUseProgram(gridFindStartComputeProgram);
@@ -199,12 +230,48 @@ void ParticleTechnique::draw()
 	glDispatchCompute(ceil(indices / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[6]);
+	StartIndexList *ptr4 = (StartIndexList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(StartIndexList), GL_MAP_READ_BIT);
+	std::vector<float> startIndexList;
+	for (int i = 0; i < pow(GRID_SIZE / GRID_H, 3); i++) {
+		startIndexList.push_back(ptr4[i].start);
+	}
+	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);*/
+
+	
 	//simulace
+	
+	//vypocet density
+	glUseProgram(simulateDensityComputeProgram);
+	glUniform1ui(maxParticlesDensityUniform, (unsigned int)gridCounter);
+	glUniform1f(hGridSimulateDensityUniform, GRID_H);
+	glUniform1ui(gridMaxIndexDensityUniform, (unsigned int)pow((GRID_SIZE / GRID_H), 3));
+	glUniform1ui(gridSizeSimulateDensityUniform, (unsigned int)(GRID_SIZE / GRID_H));
+	glUniform1f(massSimulateDensityUniform, MASS);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
+	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+	//vypocet pressure
+	glUseProgram(simulatePressureComputeProgram);
+	glUniform1ui(maxParticlesDensityUniform, (unsigned int)gridCounter);
+	glUniform1f(gasConstantPressureUniform, GAS_CONSTANT);
+	glUniform1f(restDensityPressureUniform, REST_DENSITY);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
+	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 	//hleda castice s nezapornym casem zivota, ty odsimuluje a da je do sort bufferu
 	glUseProgram(simulateComputeProgram);
 	glUniform1f(dtUniform, fdt);
 	glUniform3f(halfVectorUniform, halfVector.x, halfVector.y, halfVector.z);
 	glUniform1ui(maxParticlesUniform, (unsigned int)gridCounter);
+	glUniform1f(hGridSimulateUniform, GRID_H);
+	glUniform1ui(gridMaxIndexUniform, (unsigned int)pow((GRID_SIZE / GRID_H), 3));
+	glUniform1ui(gridSizeSimulateUniform, (unsigned int)(GRID_SIZE / GRID_H));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);

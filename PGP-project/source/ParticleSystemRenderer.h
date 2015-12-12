@@ -17,7 +17,8 @@ private:
 public:
 	ParticleSystemRenderer(glm::vec3 position);
 	bool initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP,
-		GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP);
+		GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+		GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
 	void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt);
 };
 

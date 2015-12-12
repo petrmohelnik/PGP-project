@@ -107,6 +107,9 @@
     <None Include="resource\particle.fs" />
     <None Include="resource\particle.gs" />
     <None Include="resource\particle.vs" />
+    <None Include="resource\simulate_particle_density.comp" />
+    <None Include="resource\simulate_particle_force.comp" />
+    <None Include="resource\simulate_particle_pressure.comp" />
     <None Include="resource\sort_particle.comp" />
     <None Include="resource\sort_particle_local.comp" />
     <None Include="resource\sort_particle_local_inner.comp" />

@@ -133,5 +133,14 @@
     <None Include="resource\grid_particle_find_start.comp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource\simulate_particle_density.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\simulate_particle_pressure.comp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\simulate_particle_force.comp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

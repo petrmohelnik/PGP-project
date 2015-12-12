@@ -3,7 +3,9 @@
 layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 struct ParticlePool {
-	vec4 pos;
+	vec4 pos; //w = ttl
+	vec4 velocity; //w=density
+	vec4 force; //w=pressure
 };
 
 struct DeadList {
@@ -13,6 +15,10 @@ struct DeadList {
 struct GridList {
 	uint particle_id;
 	float cell_id;
+};
+
+struct StartIndexList {
+	uint start;
 };
 
 layout(std430, binding = 0) buffer particleBuffer{
@@ -27,6 +33,10 @@ layout(binding = 4, offset = 0) uniform atomic_uint deadCounter;
 
 layout(std430, binding = 5) buffer gridBuffer{
     GridList grid[];
+};
+
+layout(std430, binding = 6) buffer startIndexBuffer{
+    StartIndexList startIndex[];
 };
 
 layout(binding = 7, offset = 0) uniform atomic_uint gridCounter;
@@ -58,5 +68,9 @@ void main()
 				particle[id].pos.w = -1.0;
 			}
 		}
+	}
+	if(id < uint(pow(size / h, 3)))
+	{
+		startIndex[id].start = 1048576;
 	}
 }

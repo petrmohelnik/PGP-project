@@ -1,7 +1,9 @@
 #version 450
 
 struct ParticlePool {
-	vec4 pos;
+	vec4 pos; //w = ttl
+	vec4 velocity; //w=density
+	vec4 force; //w=pressure
 };
 
 layout(std430, binding = 0) buffer particleBuffer{
