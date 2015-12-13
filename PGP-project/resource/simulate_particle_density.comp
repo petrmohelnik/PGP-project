@@ -77,7 +77,7 @@ float density(GridList p)
 	grid_i = grid[i];
 	while(int(grid_i.cell_id) == cellId) {
 		if(grid_i.particle_id != p.particle_id) {
-			float d = mass * wPoly6(particle[grid_i.particle_id].pos.xyz - p_i_pos);
+			float d = mass * wPoly6(p_i_pos - particle[grid_i.particle_id].pos.xyz);
 			dens += d;
 		}
 		i++;
@@ -96,7 +96,7 @@ float density(GridList p)
 			if(i != 1048576) {
 				grid_i = grid[i];
 				while(int(grid_i.cell_id) == index) {
-					float d = mass * wPoly6(particle[grid_i.particle_id].pos.xyz - p_i_pos);
+					float d = mass * wPoly6(p_i_pos - particle[grid_i.particle_id].pos.xyz);
 					dens += d;
 					particle[grid_i.particle_id].velocity.w += d;
 					i++;

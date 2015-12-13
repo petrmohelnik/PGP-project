@@ -2,7 +2,7 @@
 #define PARTICLE_TECHNIQUE_H
 
 #define GRID_SIZE 6.0
-#define GRID_H 0.1
+#define GRID_H 0.10
 #define MASS 0.00005
 #define GAS_CONSTANT 4
 #define REST_DENSITY 0.59
@@ -88,6 +88,11 @@ protected:
 	GLuint massSimulateDensityUniform;
 	GLuint gasConstantPressureUniform;
 	GLuint restDensityPressureUniform;
+	GLuint maxParticlesForceUniform;
+	GLuint hGridSimulateForceUniform;
+	GLuint gridMaxIndexForceUniform;
+	GLuint gridSizeSimulateForceUniform;
+	GLuint massSimulateForceUniform;
 	GLuint texDif;
 	glm::mat4 p;
 	glm::mat4 m;

@@ -47,6 +47,11 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	massSimulateDensityUniform = glGetUniformLocation(simulateDensityComputeProgram, "mass");
 	gasConstantPressureUniform = glGetUniformLocation(simulatePressureComputeProgram, "gasConstant");
 	restDensityPressureUniform = glGetUniformLocation(simulatePressureComputeProgram, "restDensity");
+	maxParticlesForceUniform = glGetUniformLocation(simulateForceComputeProgram, "maxParticles");
+	hGridSimulateForceUniform = glGetUniformLocation(simulateForceComputeProgram, "hGridSimulate");
+	gridMaxIndexForceUniform = glGetUniformLocation(simulateForceComputeProgram, "gridMaxIndex");
+	gridSizeSimulateForceUniform = glGetUniformLocation(simulateForceComputeProgram, "gridSize");
+	massSimulateForceUniform = glGetUniformLocation(simulateForceComputeProgram, "mass");
 
 	std::vector<ParticlePool> particlePool;
 	particlePool.reserve(indices);
@@ -175,11 +180,11 @@ void ParticleTechnique::draw()
 	//emit
 	//bere mrtve castice z dead bufferu a nastavuje jim kladny cas zivota
 	glUseProgram(emitComputeProgram);
-	glUniform1ui(maxEmitUniform, (unsigned int)(200000 * fdt));
+	glUniform1ui(maxEmitUniform, (unsigned int)(100000 * fdt));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
-	glDispatchCompute(ceil((200000 * fdt) / 256.0), 1, 1);
+	glDispatchCompute(ceil((100000 * fdt) / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	//grid divide
@@ -261,6 +266,19 @@ void ParticleTechnique::draw()
 	glUniform1f(restDensityPressureUniform, REST_DENSITY);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
+	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+	//vypocet interni sily
+	glUseProgram(simulateForceComputeProgram);
+	glUniform1ui(maxParticlesForceUniform, (unsigned int)gridCounter);
+	glUniform1f(hGridSimulateForceUniform, GRID_H);
+	glUniform1ui(gridMaxIndexForceUniform, (unsigned int)pow((GRID_SIZE / GRID_H), 3));
+	glUniform1ui(gridSizeSimulateForceUniform, (unsigned int)(GRID_SIZE / GRID_H));
+	glUniform1f(massSimulateForceUniform, MASS);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
