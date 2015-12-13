@@ -18,7 +18,7 @@ class Material
 private:
 	Texture difTex;
 public:
-	void setDifTex(Texture tex);
+	void setDifTex(const Texture &tex);
 	Texture getDifTex();
 };
 

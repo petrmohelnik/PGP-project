@@ -252,7 +252,7 @@ int main(int argc, char **argv)
   Model modelSphere;
   glm::vec3 spherePos[3] = { glm::vec3(1.0f, 1.5f, 0.5f), glm::vec3(-0.7f, 0.7f, 0.2f), glm::vec3(0.2f, 1.0f, -0.7f) };
   std::shared_ptr<Mesh> sphereMesh(new Mesh);
-  sphereMesh->createSphere(0.3, 108);
+  sphereMesh->createSphere(0.3f, 108);
   sphereMesh->addMaterial(mat);
   modelSphere.addMesh(sphereMesh);
   std::shared_ptr<BasicRenderer> sphereRenderer[3];

@@ -21,7 +21,7 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 	return true;
 }
 
-void ParticleSystemRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt)
+void ParticleSystemRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType)
 {
 	technique->setP(cam.getProjection());
 	technique->setV(cam.getView());

@@ -23,7 +23,8 @@ public:
 	void init(float fov, int width, int height, float nearPlane, float farPlane, int _mode); //nacpat uhel pohledu a dalsi cipoviny
 	void rotateX(float r);
 	void rotateY(float r);
-	void translate(glm::vec3 t);
+	void translate(const glm::vec3 &t);
+  void lookAt(const glm::vec3 &pos, const glm::vec3 &to);
 	glm::mat4 getProjection();
 	glm::mat4 getView();
 	glm::vec3 getPos();

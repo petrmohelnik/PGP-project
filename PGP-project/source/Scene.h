@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -41,10 +42,17 @@ class MainScene : public Scene
 {
 private:
 	int cameraMode;
+  GLuint fboDepth;
+  GLuint rboDepth;
+  GLuint textureDepth;
+  GLuint textureDepthAccum;
+
 	void onKeyDown(SDL_Keycode key);
 	void onMouseMove(Sint32 x, Sint32 y, Sint32 xrel, Sint32 yrel, Uint32 state);
 	void onMouseWheel(Sint32 x, Sint32 y);
+
 public:
+  MainScene();
 	void handleSdlEvent(SDL_Event &event);
 	void setCameraMode(int mode);
 	void initCamera(float fov, int width, int height, float nearPlane, float farPlane, int mode = CAM_ROT_TRANS);

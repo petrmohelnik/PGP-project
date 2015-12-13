@@ -22,9 +22,16 @@ void Camera::rotateY(float r)
 	rot.y += r;
 }
 
-void Camera::translate(glm::vec3 t)
+void Camera::translate(const glm::vec3 &t)
 {
 	pos -= t;
+}
+
+void Camera::lookAt(const glm::vec3 &pos, const glm::vec3 &to)
+{
+  this->pos = pos;
+  glm::vec3 v = glm::normalize(to - pos);
+  rot = glm::vec2(atan2f(v.z, v.x), v.y * 3.1415f);
 }
 
 glm::mat4 Camera::getProjection()

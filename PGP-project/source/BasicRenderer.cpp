@@ -17,7 +17,7 @@ bool BasicRenderer::initRenderer(Model &m, GLuint p)
 	return true;
 }
 
-void BasicRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt)
+void BasicRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType)
 {
 	if (lights.size() > 0)
 		technique->setLightPos(lights[0].pos);

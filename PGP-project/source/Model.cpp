@@ -1,6 +1,6 @@
 #include "Model.h"
 
-void Material::setDifTex(Texture tex)
+void Material::setDifTex(const Texture &tex)
 {
 	difTex = tex;
 }
