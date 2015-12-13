@@ -106,7 +106,7 @@ void MainScene::onMouseMove(Sint32 x, Sint32 y, Sint32 xrel, Sint32 yrel, Uint32
 
 void MainScene::onMouseWheel(Sint32 x, Sint32 y)
 {
-	camera.translate(glm::vec3(0.0, 0.0, y));
+	camera.translate(glm::vec3(0.0, 0.0, -y));
 }
 
 void MainScene::setCameraMode(int mode)
@@ -125,6 +125,8 @@ void MainScene::render(Uint32 dt)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+  //glEnable(GL_CULL_FACE);
+  //glCullFace(GL_CW);
 
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{

@@ -231,21 +231,40 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	Model m;
-	std::shared_ptr<Mesh> sphereMesh(new Mesh);
-	sphereMesh->createSphere(0.3, 108);
-	std::shared_ptr<Material> mat(new Material);
-	Texture tex;
-	if (!f.loadTexture("resource/white_D.png", tex))
-		return false;
-	mat->setDifTex(tex);
-	sphereMesh->addMaterial(mat);
-	m.addMesh(sphereMesh);
-	std::shared_ptr<BasicRenderer> sphereRenderer(new BasicRenderer(glm::vec3(0.0)));
-	if (!sphereRenderer->initRenderer(m, s.getProgram("basic_program"))) {
-		cin.get();
-		return -1;
-	}
+  std::shared_ptr<Material> mat(new Material);
+  Texture tex;
+  if(!f.loadTexture("resource/white_D.png", tex))
+    return false;
+  mat->setDifTex(tex);
+
+  Model modelPlane;
+  std::shared_ptr<Mesh> planeMesh(new Mesh);
+  planeMesh->createPlane();
+  planeMesh->addMaterial(mat);
+  modelPlane.addMesh(planeMesh);
+  std::shared_ptr<BasicRenderer> planeRenderer(new BasicRenderer(glm::vec3(0.0f, 0.0f, 0.0f)));
+  if(!planeRenderer->initRenderer(modelPlane, s.getProgram("basic_program")))
+  {
+    cin.get();
+    return -1;
+  }
+
+  Model modelSphere;
+  glm::vec3 spherePos[3] = { glm::vec3(1.0f, 1.5f, 0.5f), glm::vec3(-0.7f, 0.7f, 0.2f), glm::vec3(0.2f, 1.0f, -0.7f) };
+  std::shared_ptr<Mesh> sphereMesh(new Mesh);
+  sphereMesh->createSphere(0.3, 108);
+  sphereMesh->addMaterial(mat);
+  modelSphere.addMesh(sphereMesh);
+  std::shared_ptr<BasicRenderer> sphereRenderer[3];
+  for(int i = 0; i < 3; i++)
+  {
+    sphereRenderer[i] = std::make_shared<BasicRenderer>(spherePos[i]);
+    if(!sphereRenderer[i]->initRenderer(modelSphere, s.getProgram("basic_program")))
+    {
+      cin.get();
+      return -1;
+    }
+  }
 
 	Model particles;
 	std::shared_ptr<Mesh> particlesMesh(new Mesh);
@@ -271,10 +290,12 @@ int main(int argc, char **argv)
 
 	std::shared_ptr<MainScene> scene(new MainScene);
 	scene->setName("mainScene");
-	scene->addObject(sphereRenderer);
-	scene->addObject(ParticleSystemRenderer);
-	scene->initCamera(45.0f, W_WIDTH, W_HEIGHT, 0.1f, 1000.0f, CAM_TRANS_ROT);
-	scene->getCamera()->translate(glm::vec3(0.0f, 0.0f, 2.0f));
+  for(int i = 0; i < 3; i++)
+    scene->addObject(sphereRenderer[i]);
+  scene->addObject(planeRenderer);
+  scene->addObject(ParticleSystemRenderer);
+  scene->initCamera(45.0f, W_WIDTH, W_HEIGHT, 0.1f, 1000.0f, CAM_TRANS_ROT);
+  scene->getCamera()->translate(glm::vec3(0.0f, 1.5f, 2.0f));
 	Light light(glm::vec3(10.0, 10.0, 10.0), glm::normalize(glm::vec3(0) - glm::vec3(10.0, 10.0, 10.0)));
 	scene->addLight(light);
 	scene->setAmbientLight(glm::vec3(0.1, 0.1, 0.1));

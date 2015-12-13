@@ -69,6 +69,30 @@ void Mesh::createSphere(float r, int vertices)
 	drawMode = GL_TRIANGLE_STRIP;
 }
 
+void Mesh::createPlane()
+{
+  v.push_back(glm::vec3(-10.0f, 0.0f, -10.0f));
+  v.push_back(glm::vec3( 10.0f, 0.0f, -10.0f));
+  v.push_back(glm::vec3( 10.0f, 0.0f,  10.0f));
+  v.push_back(glm::vec3(-10.0f, 0.0f, -10.0f));
+  v.push_back(glm::vec3( 10.0f, 0.0f,  10.0f));
+  v.push_back(glm::vec3(-10.0f, 0.0f,  10.0f));
+  n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+  t.push_back(glm::vec2(0.0f, 0.0f));
+  t.push_back(glm::vec2(1.0f, 0.0f));
+  t.push_back(glm::vec2(1.0f, 1.0f));
+  t.push_back(glm::vec2(0.0f, 0.0f));
+  t.push_back(glm::vec2(1.0f, 1.0f));
+  t.push_back(glm::vec2(0.0f, 1.0f));
+
+  drawMode = GL_TRIANGLES; // nesly mi quady nvm proc
+}
+
 void Mesh::createParticles(int count)
 {
 	for (int i = 0; i < count; i++)
