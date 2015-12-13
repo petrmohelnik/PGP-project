@@ -83,12 +83,12 @@ void Mesh::createPlane()
   n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
   n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
   n.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
-  t.push_back(glm::vec2(0.0f, 0.0f));
-  t.push_back(glm::vec2(1.0f, 0.0f));
-  t.push_back(glm::vec2(1.0f, 1.0f));
-  t.push_back(glm::vec2(0.0f, 0.0f));
-  t.push_back(glm::vec2(1.0f, 1.0f));
-  t.push_back(glm::vec2(0.0f, 1.0f));
+  t.push_back(glm::vec2( 0.0f,  0.0f));
+  t.push_back(glm::vec2(10.0f,  0.0f));
+  t.push_back(glm::vec2(10.0f, 10.0f));
+  t.push_back(glm::vec2( 0.0f,  0.0f));
+  t.push_back(glm::vec2(10.0f, 10.0f));
+  t.push_back(glm::vec2( 0.0f, 10.0f));
 
   drawMode = GL_TRIANGLES; // nesly mi quady nvm proc
 }

@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <iostream>
 
 #define CAM_TRANS_ROT 0
 #define CAM_ROT_TRANS 1
@@ -24,12 +26,14 @@ public:
 	void rotateX(float r);
 	void rotateY(float r);
 	void translate(const glm::vec3 &t);
-  void lookAt(const glm::vec3 &pos, const glm::vec3 &to);
+  void setPosRot(const glm::vec3 &p, const glm::vec2 &r);
+  void resize(int w, int h);
 	glm::mat4 getProjection();
 	glm::mat4 getView();
 	glm::vec3 getPos();
 	glm::vec3 getDir();
-	glm::vec2 getRotation();
+	glm::vec2 getRotation() const;
+  glm::vec2 getSize() const;
 	void setMode(int mode);
 };
 

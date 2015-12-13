@@ -11,6 +11,9 @@
 #include "Camera.h"
 #include "Renderer.h"
 
+#define FBO_WIDTH 256
+#define FBO_HEIGHT 256
+
 struct Light
 {
 	glm::vec3 pos;

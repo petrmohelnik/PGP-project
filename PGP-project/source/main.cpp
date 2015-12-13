@@ -231,6 +231,12 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+  std::shared_ptr<Material> matGrid(new Material);
+  Texture texGrid;
+  if(!f.loadTexture("resource/grid.png", texGrid))
+    return false;
+  matGrid->setDifTex(texGrid);
+
   std::shared_ptr<Material> mat(new Material);
   Texture tex;
   if(!f.loadTexture("resource/white_D.png", tex))
@@ -240,7 +246,7 @@ int main(int argc, char **argv)
   Model modelPlane;
   std::shared_ptr<Mesh> planeMesh(new Mesh);
   planeMesh->createPlane();
-  planeMesh->addMaterial(mat);
+  planeMesh->addMaterial(matGrid);
   modelPlane.addMesh(planeMesh);
   std::shared_ptr<BasicRenderer> planeRenderer(new BasicRenderer(glm::vec3(0.0f, 0.0f, 0.0f)));
   if(!planeRenderer->initRenderer(modelPlane, s.getProgram("basic_program")))

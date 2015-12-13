@@ -10,7 +10,7 @@ in vec3 f_pos;
 in vec3 f_norm;
 in vec2 f_texCoord;
 
-out vec4 gl_FragColor;
+out vec4 glFragColor;
 
 void main()
 {
@@ -36,5 +36,5 @@ void main()
 		specularReflection = lightColor * pow(max(0.0, dot(reflect(-lightDir, normal), viewDir)), shininess);
 	}
 
-	gl_FragColor = vec4(vec3(diffuseReflection + specularReflection + ambientReflection) * vec3(texture(texDifSampler, f_texCoord)), 1.0);
+	glFragColor = vec4(vec3(diffuseReflection + specularReflection + ambientReflection) * vec3(texture(texDifSampler, f_texCoord)), 1.0);
 }

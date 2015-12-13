@@ -27,11 +27,16 @@ void Camera::translate(const glm::vec3 &t)
 	pos -= t;
 }
 
-void Camera::lookAt(const glm::vec3 &pos, const glm::vec3 &to)
+void Camera::setPosRot(const glm::vec3 &p, const glm::vec2 &r)
 {
-  this->pos = pos;
-  glm::vec3 v = glm::normalize(to - pos);
-  rot = glm::vec2(atan2f(v.z, v.x), v.y * 3.1415f);
+  pos = p;
+  rot = r;
+}
+
+void Camera::resize(int w, int h)
+{
+  width = w;
+  height = h;
 }
 
 glm::mat4 Camera::getProjection()
@@ -81,9 +86,14 @@ glm::vec3 Camera::getDir()
 	return dir;
 }
 
-glm::vec2 Camera::getRotation()
+glm::vec2 Camera::getRotation() const
 {
 	return rot;
+}
+
+glm::vec2 Camera::getSize() const
+{
+  return glm::vec2(static_cast<float>(width), static_cast<float>(height));
 }
 
 void Camera::setMode(int m)
