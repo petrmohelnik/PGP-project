@@ -1,11 +1,14 @@
 #ifndef PARTICLE_TECHNIQUE_H
 #define PARTICLE_TECHNIQUE_H
 
-#define GRID_SIZE 6.0
-#define GRID_H 0.10
+#define GRID_SIZE 2.0
+#define GRID_H 0.06
 #define MASS 0.00005
-#define GAS_CONSTANT 4
+#define GAS_CONSTANT 4.0
 #define REST_DENSITY 0.59
+#define VISCOSITY 0.01
+#define BUOYANCY 5.0
+#define GRAVITY -9.81
 
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
@@ -48,7 +51,7 @@ class ParticleTechnique
 {
 protected:
 	GLuint vao;
-	GLuint vbo[8]; //pool, sortList, deadList, sortCounter, deadCounter, gridList, startIndexList, gridCounter
+	GLuint vbo[9]; //pool, sortList, deadList, sortCounter, deadCounter, gridList, startIndexList, gridCounter, sortedParticlePool
 	int indices; //amount of indices in vao
 	GLuint program;
 	GLuint simulateComputeProgram;
@@ -69,6 +72,9 @@ protected:
 	GLuint hGridSimulateUniform;
 	GLuint gridMaxIndexUniform;
 	GLuint gridSizeSimulateUniform;
+	GLuint buoyancySimulateUniform;
+	GLuint restDensitySimulateUniform;
+	GLuint gravitySimulateUniform;
 	GLuint maxEmitUniform;
 	GLuint maxSortUniform;
 	GLuint maxSortLocalUniform;
@@ -86,6 +92,7 @@ protected:
 	GLuint gridMaxIndexDensityUniform;
 	GLuint gridSizeSimulateDensityUniform;
 	GLuint massSimulateDensityUniform;
+	GLuint maxParticlesPressureUniform;
 	GLuint gasConstantPressureUniform;
 	GLuint restDensityPressureUniform;
 	GLuint maxParticlesForceUniform;
@@ -93,6 +100,7 @@ protected:
 	GLuint gridMaxIndexForceUniform;
 	GLuint gridSizeSimulateForceUniform;
 	GLuint massSimulateForceUniform;
+	GLuint viscositySimulateForceUniform;
 	GLuint texDif;
 	glm::mat4 p;
 	glm::mat4 m;
@@ -102,6 +110,7 @@ protected:
 	int dt;
 	glm::vec3 viewPos;
 	int texDifSampler;
+	int counter = 0;
 public:
 	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, 
 		GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,

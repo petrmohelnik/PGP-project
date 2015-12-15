@@ -10,10 +10,6 @@ struct ParticlePool {
 	vec4 force; //w=pressure
 };
 
-layout(std430, binding = 0) buffer particleBuffer{
-    ParticlePool particle[];
-};
-
 struct GridList {
 	uint particle_id;
 	float cell_id;
@@ -31,11 +27,16 @@ layout(std430, binding = 6) buffer startIndexBuffer{
     StartIndexList startIndex[];
 };
 
+layout(std430, binding = 8) buffer particleSortedBuffer{
+    ParticlePool particleSorted[];
+};
+
 uniform uint maxParticles;
 uniform float h;
 uniform uint gridMaxIndex;
 uniform uint gridSize;
 uniform float mass;
+uniform float viscosity;
 
 vec3 wGradientSpiky(vec3 r)
 {
@@ -59,15 +60,26 @@ float wLaplacianViscosity(vec3 r)
 		return 0.0;
 }
 
-vec3 force(GridList p)
+vec3 force(int cellId, int id)
 {
-	int cellId = int(p.cell_id);
 	uint i = 0;
-	ParticlePool p_i = particle[p.particle_id];
+	ParticlePool p_i = particleSorted[id];
 	vec3 forc = vec3(0.0, 0.0, 0.0);
 	int gridSize2 = int(gridSize*gridSize);
-	GridList grid_i;
-	const int indices[13] = {
+	const int indices[26] = {
+		cellId - 1 - int(gridSize) - gridSize2,
+		cellId     - int(gridSize) - gridSize2,
+		cellId + 1 - int(gridSize) - gridSize2,
+		cellId - 1                 - gridSize2,
+		cellId                     - gridSize2,
+		cellId + 1                 - gridSize2,
+		cellId - 1 + int(gridSize) - gridSize2,
+		cellId     + int(gridSize) - gridSize2,
+		cellId + 1 + int(gridSize) - gridSize2,
+		cellId - 1 - int(gridSize),
+		cellId     - int(gridSize),
+		cellId + 1 - int(gridSize),
+		cellId - 1,
 		cellId + 1,
 		cellId - 1 + int(gridSize),
 		cellId     + int(gridSize),
@@ -85,41 +97,32 @@ vec3 force(GridList p)
 
 	//prvni bunka
 	i = startIndex[cellId].start;
-	grid_i = grid[i];
-	while(int(grid_i.cell_id) == cellId) {
-		if(grid_i.particle_id != p.particle_id) {
-			ParticlePool p_j = particle[grid_i.particle_id];
-			vec3 f = vec3(0.0,0.0,0.0);
-			f -= mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz);
-			f += mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
-			forc += f;
+	while(int(grid[i].cell_id) == cellId) {
+		if(i != id) {
+			ParticlePool p_j = particleSorted[i];
+			forc -= mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz);
+			forc += viscosity * mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
 		}
 		i++;
 		if(i > maxParticles)
 			break;
-		grid_i = grid[i];
 	}
 
 	//dalsi bunky
-	for(int c = 0; c < 13; c++)
+	for(int c = 0; c < 26; c++)
 	{
 		int index = indices[c];
 		if(index >= 0 && index < gridMaxIndex) {
 			i = startIndex[index].start;
 
-			if(i != 1048576) {
-				grid_i = grid[i];
-				while(int(grid_i.cell_id) == index) {
-					ParticlePool p_j = particle[grid_i.particle_id];
-					vec3 f = vec3(0.0,0.0,0.0);
-					f -= (mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz));
-					f += mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
-					forc += f;
-					particle[grid_i.particle_id].force.xyz += f;
+			if(i != 8388608) {
+				while(int(grid[i].cell_id) == index) {
+					ParticlePool p_j = particleSorted[i];
+					forc -= (mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz));
+					forc += viscosity * mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
 					i++;
 					if(i >= maxParticles)
 						break;
-					grid_i = grid[i];
 				}
 			}
 		}
@@ -133,8 +136,6 @@ void main()
     uint id = gl_GlobalInvocationID.x;
 	if(id < maxParticles)
 	{
-		GridList p = grid[id];
-
-		particle[p.particle_id].force.xyz += force(p);
+		particleSorted[id].force.xyz = force(int(grid[id].cell_id), int(id));
 	}
 }

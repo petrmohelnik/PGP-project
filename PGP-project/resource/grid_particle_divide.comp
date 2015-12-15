@@ -71,6 +71,6 @@ void main()
 	}
 	if(id < uint(pow(size / h, 3)))
 	{
-		startIndex[id].start = 1048576;
+		startIndex[id].start = 8388608;
 	}
 }

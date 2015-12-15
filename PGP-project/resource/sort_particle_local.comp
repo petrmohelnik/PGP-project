@@ -38,7 +38,7 @@ void main()
 			bool swap = bool(int(smaller) ^ int(j < local_id) ^ int(direction));
 
 			barrier();
-		//	if(global_id < numParticles && (j + (gl_WorkGroupID.x * workGroupSize)) < numParticles)
+			if(global_id < numParticles && (j + (gl_WorkGroupID.x * workGroupSize)) < numParticles)
 			{
 				localSort[local_id] = (swap) ? x1 : x0;
 			}

@@ -30,12 +30,18 @@ uniform uint maxEmit;
 
 void main()
 {
-	float id = gl_GlobalInvocationID.x;
+	uint id = gl_GlobalInvocationID.x;
 	if(id < maxEmit)
 	{
 		uint c = atomicCounterIncrement(deadCounter);
 		uint i = dead[c].index;
-		particle[i].pos.xyz = particle[i].pos.xyz - vec3(0.1, 0.1, 0.1);
-		particle[i].pos.w = 1.0;
+		int sqrt3 = int(pow(maxEmit, 0.333333));
+		int sqrt2 = sqrt3 * sqrt3;
+		particle[i].pos.xyz = vec3(float(id % sqrt3) * 0.04 - (sqrt3 * 0.02), (float(id % sqrt2) / sqrt3) * 0.04 + 0.6, float(id / sqrt2) * 0.04 - (sqrt3 * 0.02));
+		particle[i].velocity.xyz = vec3(0.0,0.0,0.0);
+		//particle[i].pos.xyz = vec3(rand(vec2(id++,c++)) * 1.4 - 0.7, rand(vec2(id++,c++)) * 1.4 + 0.5, rand(vec2(id++,c++)) * 1.4 - 0.7);
+		//particle[i].velocity.xyz = vec3(rand(vec2(id++,c++)), rand(vec2(id++,c++)), rand(vec2(id++,c++)));
+		//particle[i].pos.xyz = particle[i].pos.xyz - vec3(0.1, 0.1, 0.1);
+		particle[i].pos.w = 100.0;
 	}
 }

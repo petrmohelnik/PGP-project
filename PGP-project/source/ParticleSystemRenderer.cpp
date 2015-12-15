@@ -32,7 +32,7 @@ void ParticleSystemRenderer::render(Camera &cam, std::vector<Light> &lights, glm
 	glm::vec3 halfVector;
 	bool flipped;
 
-	if (glm::dot(cam.getDir(), lights[0].dir) > 0) {
+	if (glm::dot(cam.getDir(), lights[0].dir) > 0.0) {
 		halfVector = glm::normalize(cam.getDir() + lights[0].dir);
 		flipped = false;
 	} 

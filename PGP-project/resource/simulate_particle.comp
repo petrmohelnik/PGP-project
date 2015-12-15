@@ -51,45 +51,16 @@ layout(std430, binding = 6) buffer startIndexBuffer{
     StartIndexList startIndex[];
 };
 
+layout(std430, binding = 8) buffer particleSortedBuffer{
+    ParticlePool particleSorted[];
+};
+
 uniform float dt;
 uniform vec3 halfVector;
 uniform uint maxParticles;
-uniform float h;
-uniform uint gridMaxIndex;
-uniform uint gridSize;
-
-float wPoly6(vec3 r)
-{
-	float abs_r = length(r);
-	if(abs_r >= 0 && abs_r <= h)
-	{
-		return (315.0/(64*PI*pow(h,9)))*pow(h*h-abs_r*abs_r,3);
-	}
-	else
-		return 0.0;
-}
-
-float wSpiky(vec3 r)
-{
-	float abs_r = length(r);
-	if(abs_r >= 0 && abs_r <= h)
-	{
-		return (15.0/(PI*pow(h,6)))*pow(h-abs_r,3);
-	}
-	else
-		return 0.0;
-}
-
-float wViscosity(vec3 r)
-{
-	float abs_r = length(r);
-	if(abs_r >= 0 && abs_r <= h)
-	{
-		return (15.0/(2*PI*pow(h,3)))*(-(pow(abs_r,3)/(2*pow(h,3))) + (abs_r*abs_r)/(h*h) + h/(2*abs_r) - 1.0);
-	}
-	else
-		return 0.0;
-}
+uniform float gravity;
+uniform float buoyancy;
+uniform float restDensity;
 
 void main()
 {
@@ -97,7 +68,10 @@ void main()
 	if(id < maxParticles)
 	{
 		GridList p = grid[id];
-		vec4 posTtl = particle[p.particle_id].pos;
+		//particle[p.particle_id] = particleSorted[id];
+		ParticlePool particle_id = particleSorted[id];
+
+		vec4 posTtl = particle_id.pos;
 		vec3 pos = posTtl.xyz;
 		float ttl = posTtl.w;
 
@@ -107,15 +81,74 @@ void main()
 			if(ttl <= 0.0) {
 				uint c = atomicCounterDecrement(deadCounter);
 				dead[c].index = p.particle_id;
-				particle[p.particle_id].pos.w = ttl;
+				particle_id.pos.w = ttl;
 			} else {
 				uint c = atomicCounterIncrement(sortCounter);
 				sort[c].index = p.particle_id;
 				sort[c].distance = dot(halfVector, pos);
 
-				particle[p.particle_id].pos.xyz = pos + vec3(0.1, 0.1, 0.1) * dt;
-				particle[p.particle_id].pos.w = ttl;
+				//buoyancy
+				particle_id.force.xyz += buoyancy * (particle_id.velocity.w - restDensity) * vec3(0.0, gravity, 0.0);
+				//particle_id.force.xyz += particle_id.velocity.w * vec3(0.0, gravity, 0.0);
+				vec3 a = particle_id.force.xyz / particle_id.velocity.w;
+				
+				particle_id.velocity.xyz = particle_id.velocity.xyz + a * dt;
+				particle_id.pos.xyz = pos + particle_id.velocity.xyz * dt;
+
+				//kolize s koulema
+				if(distance(particle_id.pos.xyz, vec3(1.0, 1.5, 0.5)) < 0.3) {
+					vec3 n = normalize(particle_id.pos.xyz - vec3(1.0, 1.5, 0.5));
+					particle_id.pos.xyz = vec3(1.0, 1.5, 0.5) + 0.3 * n;
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+				if(distance(particle_id.pos.xyz,vec3(-0.7f, 0.7f, 0.2f)) < 0.3) {
+					vec3 n = normalize(particle_id.pos.xyz - vec3(-0.7f, 0.7f, 0.2f));
+					particle_id.pos.xyz = vec3(-0.7f, 0.7f, 0.2f) + 0.3 * n;
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+				if(distance(particle_id.pos.xyz, vec3(0.2f, 1.0f, -0.7f)) < 0.3) {
+					vec3 n = normalize(particle_id.pos.xyz - vec3(0.2f, 1.0f, -0.7f));
+					particle_id.pos.xyz = vec3(0.2f, 1.0f, -0.7f) + 0.3 * n;
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+					
+				//kolize s bounding boxem
+				if(particle_id.pos.x > 1.0) {
+					particle_id.pos.x = 1.0;
+					vec3 n = vec3(-1.0,0.0,0.0);
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+				if(particle_id.pos.x < -1.0) {
+					particle_id.pos.x = -1.0;
+					vec3 n = vec3(1.0,0.0,0.0);
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+				if(particle_id.pos.y > 2.0) {
+					particle_id.pos.y = 2.0;
+					vec3 n = vec3(0.0,-1.0,0.0);
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+				if(particle_id.pos.y < 0.0) {
+					particle_id.pos.y = 0.0;
+					vec3 n = vec3(0.0,1.0,0.0);
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+				if(particle_id.pos.z > 1.0) {
+					particle_id.pos.z = 1.0;
+					vec3 n = vec3(0.0,0.0,-1.0);
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+				if(particle_id.pos.z < -1.0) {
+					particle_id.pos.z = -1.0;
+					vec3 n = vec3(0.0,0.0,1.0);
+					particle_id.velocity.xyz = particle_id.velocity.xyz - 1*dot(particle_id.velocity.xyz, n) * n;
+				}
+					
+
+			//	particle[p.particle_id].pos.xyz = pos + vec3(0.1, 0.1, 0.1) * dt;
+				particle_id.pos.w = ttl;
 			}
+			particle[p.particle_id] = particle_id;
 		}
 	}
 }

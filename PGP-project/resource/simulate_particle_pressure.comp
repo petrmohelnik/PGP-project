@@ -1,7 +1,5 @@
 #version 450
 
-#define PI 3.141592
-
 layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 struct ParticlePool {
@@ -10,17 +8,8 @@ struct ParticlePool {
 	vec4 force; //w=pressure
 };
 
-layout(std430, binding = 0) buffer particleBuffer{
-    ParticlePool particle[];
-};
-
-struct GridList {
-	uint particle_id;
-	float cell_id;
-};
-
-layout(std430, binding = 5) buffer gridBuffer{
-    GridList grid[];
+layout(std430, binding = 8) buffer particleSortedBuffer{
+    ParticlePool particleSorted[];
 };
 
 uniform uint maxParticles;
@@ -32,8 +21,6 @@ void main()
     uint id = gl_GlobalInvocationID.x;
 	if(id < maxParticles)
 	{
-		GridList p = grid[id];
-
-		particle[p.particle_id].force.w = gasConstant * (particle[p.particle_id].velocity.w - restDensity);
+		particleSorted[id].force.w = gasConstant * (particleSorted[id].velocity.w - restDensity);
 	}
 }

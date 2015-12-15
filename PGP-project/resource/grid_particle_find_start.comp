@@ -2,6 +2,12 @@
 
 layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
+struct ParticlePool {
+	vec4 pos; //w = ttl
+	vec4 velocity; //w=density
+	vec4 force; //w=pressure
+};
+
 struct GridList {
 	uint particle_id;
 	float cell_id;
@@ -9,6 +15,10 @@ struct GridList {
 
 struct StartIndexList {
 	uint start;
+};
+
+layout(std430, binding = 0) buffer particleBuffer{
+    ParticlePool particle[];
 };
 
 layout(std430, binding = 5) buffer gridBuffer{
@@ -21,17 +31,23 @@ layout(std430, binding = 6) buffer startIndexBuffer{
 
 layout(binding = 7, offset = 0) uniform atomic_uint gridCounter;
 
+layout(std430, binding = 8) buffer particleSortedBuffer{
+    ParticlePool particleSorted[];
+};
+
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
 	if(id < atomicCounter(gridCounter))
 	{
+		GridList grid_id = grid[id];
+		particleSorted[id] = particle[grid_id.particle_id];
 		if(id == 0) {
-			startIndex[uint(grid[id].cell_id)].start = 0;
+			startIndex[uint(grid_id.cell_id)].start = 0;
 		}
 		else {
-			if(uint(grid[id-1].cell_id) != uint(grid[id].cell_id))
-				startIndex[uint(grid[id].cell_id)].start = id;
+			if(uint(grid[id-1].cell_id) != uint(grid_id.cell_id))
+				startIndex[uint(grid_id.cell_id)].start = id;
 		}
 	}
 }
