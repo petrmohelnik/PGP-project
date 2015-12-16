@@ -100,8 +100,11 @@ vec3 force(int cellId, int id)
 	while(int(grid[i].cell_id) == cellId) {
 		if(i != id) {
 			ParticlePool p_j = particleSorted[i];
-			forc -= mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz);
-			forc += viscosity * mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
+			if(p_j.velocity.w != 0.0)
+			{
+				forc -= mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz);
+				forc += viscosity * mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
+			}
 		}
 		i++;
 		if(i > maxParticles)
@@ -118,8 +121,11 @@ vec3 force(int cellId, int id)
 			if(i != 8388608) {
 				while(int(grid[i].cell_id) == index) {
 					ParticlePool p_j = particleSorted[i];
-					forc -= (mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz));
-					forc += viscosity * mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
+					if(p_j.velocity.w != 0.0) 
+					{
+						forc -= (mass * ((p_i.force.w + p_j.force.w) / (2.0 * p_j.velocity.w)) * wGradientSpiky(p_i.pos.xyz - p_j.pos.xyz));
+						forc += viscosity * mass * ((p_j.velocity.xyz - p_i.velocity.xyz) / p_j.velocity.w) * wLaplacianViscosity(p_i.pos.xyz - p_j.pos.xyz);
+					}
 					i++;
 					if(i >= maxParticles)
 						break;

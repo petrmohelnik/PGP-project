@@ -1,7 +1,7 @@
 #ifndef PARTICLE_TECHNIQUE_H
 #define PARTICLE_TECHNIQUE_H
 
-#define GRID_SIZE 2.0
+#define GRID_SIZE 4.0
 #define GRID_H 0.06
 #define MASS 0.00005
 #define GAS_CONSTANT 4.0
@@ -20,6 +20,7 @@ struct ParticlePool
 	glm::vec4 pos; //w = ttl
 	glm::vec4 velocity; //w=density
 	glm::vec4 force; //w=pressure
+	glm::vec4 velocity_prev; //v case -deltaT/2 - pouziti pro leap frog integrator
 	ParticlePool(glm::vec4 p, glm::vec4 v, glm::vec4 f) : pos(p), velocity(v), force(f) {}
 };
 
@@ -102,6 +103,7 @@ protected:
 	GLuint massSimulateForceUniform;
 	GLuint viscositySimulateForceUniform;
 	GLuint texDif;
+	GLuint sortCounter;
 	glm::mat4 p;
 	glm::mat4 m;
 	glm::mat4 v;
@@ -115,6 +117,7 @@ public:
 	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, 
 		GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 		GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
+	void simulate();
 	void draw();
 	void sort(GLuint sortCounter, GLuint buffer);
 	void setM(glm::mat4 mat);

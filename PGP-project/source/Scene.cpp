@@ -172,6 +172,11 @@ void MainScene::initCamera(float fov, int width, int height, float nearPlane, fl
 	cameraMode = mode;
 }
 
+void MainScene::addParticleSystem(std::shared_ptr<ParticleSystemRenderer> o)
+{
+	particleSystem = o;
+}
+
 void MainScene::render(Uint32 dt)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -195,8 +200,12 @@ void MainScene::render(Uint32 dt)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, camera.getSize().x, camera.getSize().y);
 
+	particleSystem->simulate(camera, lights, dt); //dal sem casticovej system zvlast a simulaci sem vytahl z draw a dal do samostatne metody
+	
 	for(unsigned int i = 0; i < objects.size(); i++)
 		objects[i]->render(camera, lights, ambientLight, dt, Renderer::DRAW_STANDARD);
+	
+	particleSystem->render(camera, lights, ambientLight, dt, Renderer::DRAW_STANDARD);
 
   // testing only, don't panic (SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) --------------------------
   const bool showDebugShadow = true;

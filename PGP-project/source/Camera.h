@@ -10,6 +10,13 @@
 #define CAM_TRANS_ROT 0
 #define CAM_ROT_TRANS 1
 
+struct Light
+{
+	glm::vec3 pos;
+	glm::vec3 dir;
+	Light(glm::vec3 p, glm::vec3 d) : pos(p), dir(d) {}
+};
+
 class Camera
 {
 private:

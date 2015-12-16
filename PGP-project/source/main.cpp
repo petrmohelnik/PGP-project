@@ -256,13 +256,13 @@ int main(int argc, char **argv)
   }
 
   Model modelSphere;
-  glm::vec3 spherePos[3] = { glm::vec3(1.0f, 1.5f, 0.5f), glm::vec3(-0.7f, 0.7f, 0.2f), glm::vec3(0.2f, 1.0f, -0.7f) };
+  glm::vec3 spherePos[4] = { glm::vec3(1.0f, 1.5f, 0.5f), glm::vec3(-0.7f, 0.7f, 0.2f), glm::vec3(0.2f, 1.0f, -0.7f), glm::vec3(0.0f, 2.5f, 0.0f) };
   std::shared_ptr<Mesh> sphereMesh(new Mesh);
   sphereMesh->createSphere(0.3f, 108);
   sphereMesh->addMaterial(mat);
   modelSphere.addMesh(sphereMesh);
-  std::shared_ptr<BasicRenderer> sphereRenderer[3];
-  for(int i = 0; i < 3; i++)
+  std::shared_ptr<BasicRenderer> sphereRenderer[4];
+  for(int i = 0; i < 4; i++)
   {
     sphereRenderer[i] = std::make_shared<BasicRenderer>(spherePos[i]);
     if(!sphereRenderer[i]->initRenderer(modelSphere, s.getProgram("basic_program")))
@@ -296,10 +296,10 @@ int main(int argc, char **argv)
 
 	std::shared_ptr<MainScene> scene(new MainScene);
 	scene->setName("mainScene");
-  for(int i = 0; i < 3; i++)
+  for(int i = 0; i < 4; i++)
     scene->addObject(sphereRenderer[i]);
   scene->addObject(planeRenderer);
-  scene->addObject(ParticleSystemRenderer);
+  scene->addParticleSystem(ParticleSystemRenderer);
   scene->initCamera(45.0f, W_WIDTH, W_HEIGHT, 0.1f, 1000.0f, CAM_TRANS_ROT);
   scene->getCamera()->translate(glm::vec3(0.0f, 1.5f, 2.0f));
 	Light light(glm::vec3(10.0, 10.0, 10.0), glm::normalize(glm::vec3(0) - glm::vec3(10.0, 10.0, 10.0)));

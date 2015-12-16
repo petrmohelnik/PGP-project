@@ -50,11 +50,11 @@ void main()
     uint id = gl_GlobalInvocationID.x;
 	if(id < maxParticles)
 	{
-		vec4 posTtl = particle[id].pos;
-		vec3 pos = posTtl.xyz;
-		float ttl = posTtl.w;
+		ParticlePool part = particle[id];
+		vec3 pos = part.pos.xyz;
+		float ttl = part.pos.w;
 
-		if(ttl > 0.0) {
+		if(ttl > 0.0 && part.velocity.w != 0.0) {
 			uint res = uint(size / h);
 			float halfSize = size / 2.0;
 			if(abs(pos.x) <= halfSize && pos.y <= size && pos.y >= 0.0 && abs(pos.z) <= halfSize) {

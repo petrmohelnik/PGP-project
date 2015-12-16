@@ -7,7 +7,6 @@
 #include "Renderer.h"
 #include "Model.h"
 #include "Camera.h"
-#include "Scene.h"
 
 class ParticleSystemRenderer : public Renderer
 {
@@ -20,6 +19,7 @@ public:
 		GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 		GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
 	void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType);
+	void simulate(Camera &cam, std::vector<Light> &lights, int dt);
 };
 
 #endif //PARTICLE_SYSTEM_RENDERER_H

@@ -8,18 +8,10 @@
 #include <vector>
 #include <memory>
 #include <SDL/SDL.h>
-#include "Camera.h"
-#include "Renderer.h"
+#include "ParticleSystemRenderer.h"
 
 #define FBO_WIDTH 256
 #define FBO_HEIGHT 256
-
-struct Light
-{
-	glm::vec3 pos;
-	glm::vec3 dir;
-	Light(glm::vec3 p, glm::vec3 d) : pos(p), dir(d) {}
-};
 
 class Scene
 {
@@ -49,6 +41,7 @@ private:
   GLuint rboDepth;
   GLuint textureDepth;
   GLuint textureDepthAccum;
+  std::shared_ptr<ParticleSystemRenderer> particleSystem;
 
 	void onKeyDown(SDL_Keycode key);
 	void onMouseMove(Sint32 x, Sint32 y, Sint32 xrel, Sint32 yrel, Uint32 state);
@@ -60,6 +53,7 @@ public:
 	void setCameraMode(int mode);
 	void initCamera(float fov, int width, int height, float nearPlane, float farPlane, int mode = CAM_ROT_TRANS);
 	void render(Uint32 dt);
+	void addParticleSystem(std::shared_ptr<ParticleSystemRenderer> o);
 };
 
 #endif //SCENE_H

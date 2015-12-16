@@ -143,30 +143,6 @@ void ParticleTechnique::sort(GLuint sortCounter, GLuint buffer)
 	glDispatchCompute(ceil(sortCounter / 512.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[5]);
-	GridList *ptr3 = (GridList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GridList), GL_MAP_READ_BIT);
-	std::vector<GridList> sortedList;
-	for (int i = 0; i < sortCounter; i++) {
-		sortedList.push_back(ptr3[i]);
-	}
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-	for (int i = 0; i < sortCounter; i++) {
-		if (sortedList[i].cell_id == 0.0)
-			i = i;
-	}*/
-
-	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[1]);
-	SortList *ptr3 = (SortList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(SortList), GL_MAP_READ_BIT);
-	std::vector<SortList> sortedList;
-	for (int i = 0; i < sortCounter; i++) {
-		sortedList.push_back(ptr3[i]);
-	}
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-	for (int i = 0; i < sortCounter; i++) {
-		if (sortedList[i].distance == 0.0)
-			i = i;
-	}*/
-
 	unsigned int closestPowOfTwo = 1;
 	while (closestPowOfTwo < sortCounter)
 		closestPowOfTwo *= 2;
@@ -198,12 +174,12 @@ void ParticleTechnique::sort(GLuint sortCounter, GLuint buffer)
 	}
 }
 
-void ParticleTechnique::draw()
+void ParticleTechnique::simulate()
 {
 	counter++;
 	float fdt = dt * 0.001;
-	if (fdt > 0.005)
-		fdt = 0.005;
+	if (fdt > 0.01)
+		fdt = 0.01;
 	//nulovani sort counteru - kazdy snimek se vytvari znova, proto ze hodi pozice na zacatek
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
 	unsigned data[4] = { 0, 0, 0, 0 };
@@ -215,44 +191,25 @@ void ParticleTechnique::draw()
 
 	//emit
 	//bere mrtve castice z dead bufferu a nastavuje jim kladny cas zivota
-	if (dt == 0) {
+	/*if (counter == 1) {
 		glUseProgram(emitComputeProgram);
-		glUniform1ui(maxEmitUniform, (unsigned int)(27000));
+		glUniform1ui(maxEmitUniform, (unsigned int)(10000));
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
-		glDispatchCompute(ceil((27000) / 256.0), 1, 1);
+		glDispatchCompute(ceil((10000) / 256.0), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
-	}
-	else if (counter % 200 == 0) {
+	}*/
+	if (counter % 40 == 0 && counter <= 16000) {
 		glUseProgram(emitComputeProgram);
-		glUniform1ui(maxEmitUniform, (unsigned int)(1000));
+		glUniform1ui(maxEmitUniform, (unsigned int)(100));
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
-		glDispatchCompute(ceil((1000) / 256.0), 1, 1);
+		glDispatchCompute(ceil((100) / 256.0), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 	}
 
-	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[0]);
-	ParticlePool *ptr5 = (ParticlePool*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ParticlePool), GL_MAP_READ_BIT);
-	std::vector<ParticlePool> particlePool;
-	for (int i = 0; i < indices; i++) {
-		particlePool.push_back(ptr5[i]);
-	}
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-	for (int i = 0; i < indices; i++) {
-		if (particlePool[i].force.w == 0.0)
-			i = i;
-	}*/
-	/*int count = 0;
-	for (int i = 0; i < indices; i++) {
-		for (int j = i + 1; j < indices; j++) {
-			if (particlePool[i].pos.x == particlePool[j].pos.x && particlePool[i].pos.y == particlePool[j].pos.y && particlePool[i].pos.z == particlePool[j].pos.z)
-				count++;
-		}
-	}
-	count = count;*/
 	//grid divide
 	//rozdeleni castic podle pozice do mrizky, kdyz vyleze castice mimo, tak ji zabije
 	//dale incializuje pole rpo pocatecni indexy
@@ -278,15 +235,6 @@ void ParticleTechnique::draw()
 	//serazeni gridListu podle indexu do mrizky
 	sort(gridCounter, vbo[5]);
 
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[5]);
-	GridList *ptr3 = (GridList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(GridList), GL_MAP_READ_BIT);
-	std::vector<GridList> sortedList;
-	for (int i = 0; i < gridCounter; i++) {
-		sortedList.push_back(ptr3[i]);
-	}
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-
-
 	//grid find start
 	//najde prvni indexy zacatku bucketu jednotlivych voxelu
 	glUseProgram(gridFindStartComputeProgram);
@@ -298,17 +246,8 @@ void ParticleTechnique::draw()
 	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[6]);
-	StartIndexList *ptr4 = (StartIndexList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(StartIndexList), GL_MAP_READ_BIT);
-	std::vector<float> startIndexList;
-	for (int i = 0; i < pow(GRID_SIZE / GRID_H, 3); i++) {
-		startIndexList.push_back(ptr4[i].start);
-	}
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);*/
-
-	
 	//simulace
-	
+
 	//vypocet density
 	glUseProgram(simulateDensityComputeProgram);
 	glUniform1ui(maxParticlesDensityUniform, (unsigned int)gridCounter);
@@ -345,26 +284,6 @@ void ParticleTechnique::draw()
 	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[8]);
-	ParticlePool *ptr5 = (ParticlePool*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ParticlePool), GL_MAP_READ_BIT);
-	std::vector<ParticlePool> particlePool;
-	for (int i = 0; i < indices; i++) {
-		particlePool.push_back(ptr5[i]);
-	}
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-	for (int i = 0; i < 32000; i++) {
-		if (particlePool[i].velocity.w == 0.0)
-			i = i;
-	}
-
-	for (int i = 0; i < indices; i++) {
-		for (int j = i+1; j < indices; j++) {
-			if (particlePool[i].pos.x == particlePool[j].pos.x && particlePool[i].pos.y == particlePool[j].pos.y && particlePool[i].pos.z == particlePool[j].pos.z)
-				i = i;
-		}
-	}*/
-	
-
 	//hleda castice s nezapornym casem zivota, ty odsimuluje a da je do sort bufferu
 	glUseProgram(simulateComputeProgram);
 	glUniform1f(dtUniform, fdt);
@@ -387,52 +306,18 @@ void ParticleTechnique::draw()
 	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
-	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[0]);
-	ParticlePool *ptr5 = (ParticlePool*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(ParticlePool), GL_MAP_READ_BIT);
-	std::vector<ParticlePool> particlePool;
-	for (int i = 0; i < indices; i++) {
-		particlePool.push_back(ptr5[i]);
-	}
-	int test;
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-	for (int i = 0; i < indices; i++) {
-		if (!((particlePool[i].pos.x) <= 3.0 && particlePool[i].pos.y <= 6.0 && particlePool[i].pos.y >= 0.0 && abs(particlePool[i].pos.z) <= 3.0)) {
-			test = i;
-			break;
-		}
-		//	prevDist = sortedList[i];
-	}
-	for (int i = 0; i < 32000; i++) {
-		if (sortedList[i].particle_id == test) {
-			i = i;
-		}
-		//	prevDist = sortedList[i];
-	}*/
-
-
 	//precteni pozice v sort counteru, aby se vedelo kolik castic se bude vykreslovat
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
 	ptr = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT);
-	GLuint sortCounter = ptr[0];
+	sortCounter = ptr[0];
 	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
 
 	//razeni
 	sort(sortCounter, vbo[1]);
+}
 
-	/*glBindBuffer(GL_SHADER_STORAGE_BUFFER, vbo[1]);
-	SortList *ptr6 = (SortList*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(SortList), GL_MAP_READ_BIT);
-	std::vector<float> sortedList2;
-	for (int i = 0; i < sortCounter; i++) {
-	sortedList2.push_back(ptr6[i].distance);
-	}
-	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-	float prevDist = -10000.0;
-	for (int i = 0; i < sortCounter; i++) {
-	if (sortedList2[i] < -1.0)
-	i = i;
-	prevDist = sortedList2[i];
-	}*/
-		
+void ParticleTechnique::draw()
+{
 	//vykresleni
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
