@@ -32,6 +32,7 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	buoyancySimulateUniform = glGetUniformLocation(simulateComputeProgram, "buoyancy");
 	restDensitySimulateUniform = glGetUniformLocation(simulateComputeProgram, "restDensity");
 	gravitySimulateUniform = glGetUniformLocation(simulateComputeProgram, "gravity");
+	timeSimulateUniform = glGetUniformLocation(simulateComputeProgram, "time");
 	maxEmitUniform = glGetUniformLocation(emitComputeProgram, "maxEmit");
 	maxSortUniform = glGetUniformLocation(sortComputeProgram, "numParticles");
 	compareDistUniform = glGetUniformLocation(sortComputeProgram, "compareDist");
@@ -180,6 +181,7 @@ void ParticleTechnique::simulate()
 	float fdt = dt * 0.001;
 	if (fdt > 0.01)
 		fdt = 0.01;
+	time += fdt;
 	//nulovani sort counteru - kazdy snimek se vytvari znova, proto ze hodi pozice na zacatek
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
 	unsigned data[4] = { 0, 0, 0, 0 };
@@ -200,7 +202,7 @@ void ParticleTechnique::simulate()
 		glDispatchCompute(ceil((10000) / 256.0), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 	}*/
-	if (counter % 40 == 0 && counter <= 16000) {
+	if (counter % 30 == 0 && counter <= 160000) {
 		glUseProgram(emitComputeProgram);
 		glUniform1ui(maxEmitUniform, (unsigned int)(100));
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
@@ -295,6 +297,7 @@ void ParticleTechnique::simulate()
 	glUniform1f(buoyancySimulateUniform, BUOYANCY);
 	glUniform1f(restDensitySimulateUniform, REST_DENSITY);
 	glUniform1f(gravitySimulateUniform, GRAVITY);
+	glUniform1f(timeSimulateUniform, time);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);

@@ -15,22 +15,22 @@ void main()
 {
 	vec4 pos = mv * gl_in[0].gl_Position;
 
-	gl_Position = p * (pos + vec4(-1.0,-1.0,0.0,0.0) * vec4(0.01)) ;
+	gl_Position = p * (pos + vec4(-1.0,-1.0,0.0,0.0) * vec4(0.04)) ;
 	f_texCoord = vec2(0.0,0.0);
 	f_ttl = g_ttl[0];
 	EmitVertex();
 
-	gl_Position = p * (pos + vec4(-1.0,1.0,0.0,0.0) * vec4(0.01));
+	gl_Position = p * (pos + vec4(-1.0,1.0,0.0,0.0) * vec4(0.04));
 	f_texCoord = vec2(0.0,1.0);
 	f_ttl = g_ttl[0];
 	EmitVertex();
 
-	gl_Position = p * (pos + vec4(1.0,-1.0,0.0,0.0) * vec4(0.01));
+	gl_Position = p * (pos + vec4(1.0,-1.0,0.0,0.0) * vec4(0.04));
 	f_texCoord = vec2(1.0,0.0);
 	f_ttl = g_ttl[0];
 	EmitVertex();
 
-	gl_Position = p * (pos + vec4(1.0,1.0,0.0,0.0) * vec4(0.01));
+	gl_Position = p * (pos + vec4(1.0,1.0,0.0,0.0) * vec4(0.04));
 	f_texCoord = vec2(1.0,1.0);
 	f_ttl = g_ttl[0];
 	EmitVertex();

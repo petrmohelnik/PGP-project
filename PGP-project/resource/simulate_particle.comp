@@ -61,6 +61,12 @@ uniform uint maxParticles;
 uniform float gravity;
 uniform float buoyancy;
 uniform float restDensity;
+uniform float time;
+
+vec3 getWindDir(){
+	float angle = (0.5-sin(time*.5))*6.28;
+	return vec3(sin(angle), cos(angle - 3.14), cos(angle));
+}
 
 void main()
 {
@@ -89,6 +95,7 @@ void main()
 
 				//buoyancy
 				particle_id.force.xyz += buoyancy * (particle_id.velocity.w - restDensity) * vec3(0.0, gravity, 0.0);
+				particle_id.force.xyz += 0.2 * getWindDir();
 				//particle_id.force.xyz += particle_id.velocity.w * vec3(0.0, gravity, 0.0);
 				vec3 a = vec3(0.0,0.0,0.0);
 				if(particle_id.velocity.w != 0.0) 

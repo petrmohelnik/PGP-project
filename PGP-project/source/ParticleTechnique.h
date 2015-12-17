@@ -76,6 +76,7 @@ protected:
 	GLuint buoyancySimulateUniform;
 	GLuint restDensitySimulateUniform;
 	GLuint gravitySimulateUniform;
+	GLuint timeSimulateUniform;
 	GLuint maxEmitUniform;
 	GLuint maxSortUniform;
 	GLuint maxSortLocalUniform;
@@ -113,6 +114,7 @@ protected:
 	glm::vec3 viewPos;
 	int texDifSampler;
 	int counter = 0;
+	float time = 0;
 public:
 	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, 
 		GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
