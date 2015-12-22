@@ -33,14 +33,15 @@ public:
 	void rotateX(float r);
 	void rotateY(float r);
 	void translate(const glm::vec3 &t);
-  void setPosRot(const glm::vec3 &p, const glm::vec2 &r);
-  void resize(int w, int h);
+	void setPosRot(const glm::vec3 &p, const glm::vec2 &r);
+	void resize(int w, int h);
 	glm::mat4 getProjection();
+	glm::mat4 getProjectionOrtho(float l, float r, float b, float t);
 	glm::mat4 getView();
 	glm::vec3 getPos();
 	glm::vec3 getDir();
 	glm::vec2 getRotation() const;
-  glm::vec2 getSize() const;
+	glm::vec2 getSize() const;
 	void setMode(int mode);
 };
 

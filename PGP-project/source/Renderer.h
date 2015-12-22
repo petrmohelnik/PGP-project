@@ -12,14 +12,14 @@ class Renderer
 {
 protected:
 public:
-  enum DrawType
-  {
-    DRAW_STANDARD = 0,
-    DRAW_SHADOW
-  };
+	enum DrawType
+	{
+		DRAW_STANDARD = 0,
+		DRAW_SHADOW
+	};
 
 	//virtual bool initRenderer(Model &m, GLuint p) = 0;
-	virtual void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType) = 0;
+	virtual void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType) = 0;
 };
 
 #endif //RENDERER_H

@@ -13,12 +13,14 @@ void BasicTechnique::init(Mesh &m, GLuint p)
 	drawMode = m.getDrawMode();
 
 	mvpUniform = glGetUniformLocation(program, "mvp");
+	mvpDepthUniform = glGetUniformLocation(program, "mvpDepth");
 	mUniform = glGetUniformLocation(program, "m");
 	ti_mUniform = glGetUniformLocation(program, "ti_m");
 	viewPosUniform = glGetUniformLocation(program, "viewPos");
 	lightPosUniform = glGetUniformLocation(program, "lightPos");
 	ambientLightUniform = glGetUniformLocation(program, "ambientLight");
 	texDifSamplerUniform = glGetUniformLocation(program, "texDifSampler");
+	texDepthSamplerUniform = glGetUniformLocation(program, "texDepthSampler");
 
 	GLint attr = glGetAttribLocation(program, "v_pos");
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -55,47 +57,55 @@ void BasicTechnique::draw()
 	glm::mat4 mvp = p * v * m;
 
 	glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, glm::value_ptr(mvp));
+	glUniformMatrix4fv(mvpDepthUniform, 1, GL_FALSE, glm::value_ptr(mvpDepth));
 	glUniformMatrix3fv(mUniform, 1, GL_FALSE, glm::value_ptr(glm::mat3(m)));
 	glUniformMatrix3fv(ti_mUniform, 1, GL_FALSE, glm::value_ptr(glm::mat3(ti_m)));
 	glUniform3f(viewPosUniform, -viewPos.x, -viewPos.y, -viewPos.z);
 	glUniform3f(lightPosUniform, lightPos.x, lightPos.y, lightPos.z);
 	glUniform3f(ambientLightUniform, ambientLight.x, ambientLight.y, ambientLight.z);
 	glUniform1i(texDifSamplerUniform, texDifSampler);
+	glUniform1i(texDepthSamplerUniform, texDepthSampler);
 	
 	glBindVertexArray(vao);
 	glDrawArrays(drawMode, 0, indices);
 	glBindVertexArray(0);
 }
 
-void BasicTechnique::setM(glm::mat4 mat)
+void BasicTechnique::setM(const glm::mat4 &mat)
 {
 	m = mat;
 	ti_m = glm::transpose(glm::inverse(mat));
 }
 
-void BasicTechnique::setV(glm::mat4 mat)
+void BasicTechnique::setV(const glm::mat4 &mat)
 {
 	v = mat;
 }
 
-void BasicTechnique::setP(glm::mat4 mat)
+void BasicTechnique::setP(const glm::mat4 &mat)
 {
 	p = mat;
 }
 
-void BasicTechnique::setViewPos(glm::vec3 v)
+void BasicTechnique::setViewPos(const glm::vec3 &v)
 {
 	viewPos = v;
 }
 
-void BasicTechnique::setLightPos(glm::vec3 p)
+void BasicTechnique::setLightPos(const glm::vec3 &p)
 {
 	lightPos = p;
 }
 
-void BasicTechnique::setAmbientLight(glm::vec3 a)
+void BasicTechnique::setAmbientLight(const glm::vec3 &a)
 {
 	ambientLight = a;
+}
+
+void BasicTechnique::setDepth(const glm::mat4 &mvp, GLuint texture)
+{
+	mvpDepth = mvp;
+	texDepth = texture;
 }
 
 void BasicTechnique::bindTexDif(int t)
@@ -103,4 +113,11 @@ void BasicTechnique::bindTexDif(int t)
 	glActiveTexture(GL_TEXTURE0 + t);
 	glBindTexture(GL_TEXTURE_2D, texDif);
 	texDifSampler = t;
+}
+
+void BasicTechnique::bindTexDepth(int t)
+{
+	glActiveTexture(GL_TEXTURE0 + t);
+	glBindTexture(GL_TEXTURE_2D, texDepth);
+	texDepthSampler = t;
 }

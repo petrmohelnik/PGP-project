@@ -10,8 +10,8 @@
 #include <SDL/SDL.h>
 #include "ParticleSystemRenderer.h"
 
-#define FBO_WIDTH 256
-#define FBO_HEIGHT 256
+#define FBO_WIDTH 2048
+#define FBO_HEIGHT 2048
 
 class Scene
 {
@@ -38,7 +38,7 @@ class MainScene : public Scene
 private:
 	int cameraMode;
   GLuint fboDepth;
-  GLuint rboDepth;
+  //GLuint rboDepth;
   GLuint textureDepth;
   GLuint textureDepthAccum;
   std::shared_ptr<ParticleSystemRenderer> particleSystem;

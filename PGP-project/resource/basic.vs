@@ -1,6 +1,7 @@
 #version 450
 
 uniform mat4 mvp;
+uniform mat4 mvpDepth;
 uniform mat3 m;
 
 in vec3 v_pos;
@@ -10,6 +11,7 @@ in vec2 v_texCoord;
 out vec3 f_pos;
 out vec3 f_norm;
 out vec2 f_texCoord;
+out vec4 f_depthPos;
 
 void main()
 {
@@ -17,5 +19,6 @@ void main()
 	f_texCoord = v_texCoord;
 	f_norm = v_norm;
 
+	f_depthPos = mvpDepth * vec4(v_pos, 1.0);
 	gl_Position = mvp * vec4(v_pos, 1.0);
 }

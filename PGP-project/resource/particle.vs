@@ -18,5 +18,6 @@ void main()
 {
 	vec4 particle = particle[particleID].pos;
 	g_ttl = particle.w;
+
 	gl_Position = vec4(particle.xyz, 1.0);
 }

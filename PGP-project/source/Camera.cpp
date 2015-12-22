@@ -29,19 +29,25 @@ void Camera::translate(const glm::vec3 &t)
 
 void Camera::setPosRot(const glm::vec3 &p, const glm::vec2 &r)
 {
-  pos = p;
-  rot = r;
+	pos = p;
+	rot = r;
 }
 
 void Camera::resize(int w, int h)
 {
-  width = w;
-  height = h;
+	width = w;
+	height = h;
 }
 
 glm::mat4 Camera::getProjection()
 {
+	//return glm::ortho<float>(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 10.0f);
 	return glm::perspective(fov, width / (float)height, nearPlane, farPlane);
+}
+
+glm::mat4 Camera::getProjectionOrtho(float l, float r, float b, float t)
+{
+	return glm::ortho<float>(l, r, b, t, nearPlane, farPlane);
 }
 
 glm::mat4 Camera::getView()

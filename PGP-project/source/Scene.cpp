@@ -34,7 +34,7 @@ void Scene::render(Uint32 dt)
 {
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{
-		objects[i]->render(camera, lights, ambientLight, dt, Renderer::DRAW_STANDARD);
+		objects[i]->render(camera, lights, ambientLight, glm::mat4(1.0f), 0, dt, Renderer::DRAW_STANDARD);
 	}
 }
 
@@ -50,47 +50,47 @@ void Scene::handleSdlEvent(SDL_Event &event)
 
 MainScene::MainScene()
 {
-  glGenTextures(1, &textureDepth);
-  glBindTexture(GL_TEXTURE_2D, textureDepth);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, FBO_WIDTH, FBO_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-  glBindTexture(GL_TEXTURE_2D, 0);
+	glGenTextures(1, &textureDepth);
+	glBindTexture(GL_TEXTURE_2D, textureDepth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, FBO_WIDTH, FBO_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
-  glGenTextures(1, &textureDepthAccum);
-  glBindTexture(GL_TEXTURE_2D, textureDepthAccum);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, FBO_WIDTH, FBO_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glBindTexture(GL_TEXTURE_2D, 0);
+	glGenTextures(1, &textureDepthAccum);
+	glBindTexture(GL_TEXTURE_2D, textureDepthAccum);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, FBO_WIDTH, FBO_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
-  glGenRenderbuffers(1, &rboDepth);
-  glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, FBO_WIDTH, FBO_HEIGHT);
+	/*glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, FBO_WIDTH, FBO_HEIGHT);*/
 
-  glGenFramebuffers(1, &fboDepth);
-  glBindFramebuffer(GL_FRAMEBUFFER, fboDepth);
+	glGenFramebuffers(1, &fboDepth);
+	glBindFramebuffer(GL_FRAMEBUFFER, fboDepth);
 
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textureDepth, 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureDepthAccum, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textureDepth, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureDepthAccum, 0);
 
-  GLenum att[1] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, att);
+	const GLenum att[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, att);
 
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
-  if(GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    std::cout << "fbo error: " << status << "\n";
+	if(GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "fbo error: " << status << "\n";
 
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glBindTexture(GL_TEXTURE_2D, 0);
+	//glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void MainScene::handleSdlEvent(SDL_Event &event)
@@ -179,80 +179,88 @@ void MainScene::addParticleSystem(std::shared_ptr<ParticleSystemRenderer> o)
 
 void MainScene::render(Uint32 dt)
 {
+	glClearColor(0.2f, 0.4f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-  //glEnable(GL_CULL_FACE);
-  //glCullFace(GL_CW);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_CW);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, fboDepth);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glEnable(GL_DEPTH_TEST);
+	glBindFramebuffer(GL_FRAMEBUFFER, fboDepth);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(3.0f, 1.0f);
 
-  const Camera camOld = camera;
-  camera.resize(FBO_WIDTH, FBO_HEIGHT);
-  glViewport(0, 0, camera.getSize().x, camera.getSize().y);
-  camera.setPosRot(glm::vec3(0.0f, 0.0f, -30.0f), glm::vec2(-0.7854f, 0.7854f));
+	const Camera camOld = camera;
+	camera.resize(FBO_WIDTH, FBO_HEIGHT);
+	glViewport(0, 0, static_cast<GLsizei>(camera.getSize().x), static_cast<GLsizei>(camera.getSize().y));
+	camera.setPosRot(glm::vec3(0.0f, 0.0f, -30.0f), glm::vec2(-0.7854f, 0.7854f));
+	const glm::mat4 mvpDepth = camera.getProjection() * camera.getView();
 
-  for(unsigned int i = 0; i < objects.size(); i++)
-    objects[i]->render(camera, lights, ambientLight, dt, Renderer::DRAW_SHADOW);
+	for(unsigned int i = 0; i < objects.size(); i++)
+		objects[i]->render(camera, lights, ambientLight, mvpDepth, 0, dt, Renderer::DRAW_SHADOW);
 
-  camera = camOld;
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glViewport(0, 0, camera.getSize().x, camera.getSize().y);
+	camera = camOld;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_POLYGON_OFFSET_FILL);
+	glViewport(0, 0, static_cast<GLsizei>(camera.getSize().x), static_cast<GLsizei>(camera.getSize().y));
 
 	particleSystem->simulate(camera, lights, dt); //dal sem casticovej system zvlast a simulaci sem vytahl z draw a dal do samostatne metody
-	
+
 	for(unsigned int i = 0; i < objects.size(); i++)
-		objects[i]->render(camera, lights, ambientLight, dt, Renderer::DRAW_STANDARD);
-	
-	particleSystem->render(camera, lights, ambientLight, dt, Renderer::DRAW_STANDARD);
+		objects[i]->render(camera, lights, ambientLight, mvpDepth, textureDepth, dt, Renderer::DRAW_STANDARD);
 
-  // testing only, don't panic (SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) --------------------------
-  const bool showDebugShadow = true;
+	particleSystem->render(camera, lights, ambientLight, mvpDepth, textureDepth, dt, Renderer::DRAW_STANDARD);
 
-  if(showDebugShadow)
-  {
-    glUseProgram(0);
-    glEnable(GL_TEXTURE_2D);
-    glActiveTexture(0);
-    glBindTexture(GL_TEXTURE_2D, textureDepth);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
+	// testing only, don't panic (SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) --------------------------
+	const bool showDebugShadow = true;
 
-    const float scale = 0.5f;
-    const float fboW = FBO_WIDTH * 2.0f / camera.getSize().x * 2.0f * scale;
-    const float fboH = FBO_HEIGHT * 2.0f / camera.getSize().y * 2.0f * scale;
+	if(showDebugShadow)
+	{
+		glUseProgram(0);
+		glEnable(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureDepth);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
 
-    glBegin(GL_QUADS);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex3f(-1.0f, 1.0f, 1.0f);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex3f(-1.0f + fboW, 1.0f, 1.0f);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex3f(-1.0f + fboW, 1.0f - fboH, 1.0f);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex3f(-1.0f, 1.0f - fboH, 1.0f);
-    glEnd();
+		const float scale = 1.0f / FBO_WIDTH * 256.0f;
+		const float fboW = FBO_WIDTH / camera.getSize().x * scale;
+		const float fboH = FBO_HEIGHT / camera.getSize().y * scale;
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-    glBindTexture(GL_TEXTURE_2D, textureDepthAccum);
+		glBegin(GL_QUADS);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3f(-1.0f, 1.0f, 1.0f);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3f(-1.0f + fboW, 1.0f, 1.0f);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3f(-1.0f + fboW, 1.0f - fboH, 1.0f);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3f(-1.0f, 1.0f - fboH, 1.0f);
+		glEnd();
 
-    glBegin(GL_QUADS);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex3f(-1.0f, 1.0f - fboH, 1.0f);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex3f(-1.0f + fboW, 1.0f - fboH, 1.0f);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex3f(-1.0f + fboW, 1.0f - 2.0f * fboH, 1.0f);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex3f(-1.0f, 1.0f - 2.0f * fboH, 1.0f);
-    glEnd();
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+		glBindTexture(GL_TEXTURE_2D, textureDepthAccum);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_TEXTURE_2D);
-  }
+		glBegin(GL_QUADS);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3f(-1.0f, 1.0f - fboH, 1.0f);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3f(-1.0f + fboW, 1.0f - fboH, 1.0f);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3f(-1.0f + fboW, 1.0f - 2.0f * fboH, 1.0f);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3f(-1.0f, 1.0f - 2.0f * fboH, 1.0f);
+		glEnd();
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_TEXTURE_2D);
+	}
 }

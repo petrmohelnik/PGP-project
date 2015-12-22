@@ -17,9 +17,9 @@ private:
 	std::shared_ptr<BasicTechnique> technique;
 	glm::vec3 pos;
 public:
-	BasicRenderer(glm::vec3 position);
+	BasicRenderer(const glm::vec3 &position);
 	bool initRenderer(Model &m, GLuint p);
-	void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType);
+	void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType);
 };
 
 #endif //BASIC_RENDERER_H

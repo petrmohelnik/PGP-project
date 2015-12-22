@@ -1,6 +1,6 @@
 #include "ParticleSystemRenderer.h"
 
-ParticleSystemRenderer::ParticleSystemRenderer(glm::vec3 position)
+ParticleSystemRenderer::ParticleSystemRenderer(const glm::vec3 &position)
 {
 	pos = position;
 	technique.reset(new ParticleTechnique);
@@ -21,22 +21,32 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 	return true;
 }
 
-void ParticleSystemRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType)
+void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType)
 {
+	technique->setAmbientLight(ambientLight);
 	technique->setP(cam.getProjection());
 	technique->setV(cam.getView());
 	technique->setViewPos(cam.getPos());
-	technique->bindTexDif(0);
 
 	glm::mat4 M = glm::mat4(1.0);
 	M = glm::translate(M, pos);
 
 	technique->setM(M);
 
+	const glm::mat4 bias(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.5f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f);
+
+	technique->setDepth(bias * mvpDepth * M, texDepth);
+	technique->bindTexDepth(1);
+	technique->bindTexDif(0);
+
 	technique->draw();
 }
 
-void ParticleSystemRenderer::simulate(Camera &cam, std::vector<Light> &lights, int dt)
+void ParticleSystemRenderer::simulate(Camera &cam, const std::vector<Light> &lights, int dt)
 {
 	technique->setDt(dt);
 

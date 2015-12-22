@@ -21,8 +21,11 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	indices = count;
 
 	mvUniform = glGetUniformLocation(program, "mv");
+	mvpDepthUniform = glGetUniformLocation(program, "mvpDepth");
 	pUniform = glGetUniformLocation(program, "p");
+	ambientLightUniform = glGetUniformLocation(program, "ambientLight");
 	texDifSamplerUniform = glGetUniformLocation(program, "texDifSampler");
+	texDepthSamplerUniform = glGetUniformLocation(program, "texDepthSampler");
 	dtUniform = glGetUniformLocation(simulateComputeProgram, "dt");
 	halfVectorUniform = glGetUniformLocation(simulateComputeProgram, "halfVector");
 	maxParticlesUniform = glGetUniformLocation(simulateComputeProgram, "maxParticles");
@@ -76,7 +79,7 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 
 	std::vector<SortList> sortList;
 	sortList.reserve(indices);
-	for (unsigned int i = 0; i < indices; i++) {
+	for (int i = 0; i < indices; i++) {
 		sortList.push_back(SortList(i, 0.0));
 	}
 	glBindVertexArray(vao);
@@ -90,7 +93,7 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 
 	std::vector<DeadList> deadList;
 	deadList.reserve(indices);
-	for (unsigned int i = 0; i < indices; i++) {
+	for (int i = 0; i < indices; i++) {
 		deadList.push_back(DeadList(i));
 	}
 	//mrtve castice, z nich se potom bere pri emitu
@@ -108,7 +111,7 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 
 	std::vector<GridList> gridList;
 	gridList.reserve(indices);
-	for (unsigned int i = 0; i < indices; i++) {
+	for (int i = 0; i < indices; i++) {
 		gridList.push_back(GridList(0, 0));
 	}
 	//rozrazeni castic do mrizky
@@ -116,7 +119,7 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	glBufferData(GL_ARRAY_BUFFER, gridList.size() * sizeof(GridList), &(gridList[0]), GL_STATIC_DRAW);
 
 	std::vector<StartIndexList> startIndexList;
-	startIndexList.reserve(pow((GRID_SIZE / GRID_H), 3));
+	startIndexList.reserve(static_cast<unsigned int>(pow((GRID_SIZE / GRID_H), 3.0)));
 	for (unsigned int i = 0; i < pow((GRID_SIZE / GRID_H), 3); i++) {
 		startIndexList.push_back(StartIndexList(0));
 	}
@@ -141,7 +144,7 @@ void ParticleTechnique::sort(GLuint sortCounter, GLuint buffer)
 	glUseProgram(sortLocalComputeProgram);
 	glUniform1ui(maxSortLocalUniform, sortCounter);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, buffer);
-	glDispatchCompute(ceil(sortCounter / 512.0), 1, 1);
+	glDispatchCompute(static_cast<GLuint>(ceil(sortCounter / 512.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	unsigned int closestPowOfTwo = 1;
@@ -159,10 +162,10 @@ void ParticleTechnique::sort(GLuint sortCounter, GLuint buffer)
 			glUniform1ui(subArraySizeUniform, subArraySize);
 			glUniform1ui(degreeSortUniform, deg);
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, buffer);
-			unsigned int size = pow(2, deg);
-			glDispatchCompute(ceil(closestPowOfTwo / (128.0 * size)), 1, 1);
+			unsigned int size = static_cast<unsigned int>(pow(2.0, deg));
+			glDispatchCompute(static_cast<GLuint>(ceil(closestPowOfTwo / (128.0 * size))), 1, 1);
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-			for (int i = 0; i < deg - 1; i++) {
+			for (unsigned int i = 0; i < deg - 1; i++) {
 				compareDist /= 2; pow2--;
 			}
 		}
@@ -170,7 +173,7 @@ void ParticleTechnique::sort(GLuint sortCounter, GLuint buffer)
 		glUniform1ui(maxSortLocalInnerUniform, sortCounter);
 		glUniform1ui(subArraySizeLocalInnerUniform, subArraySize);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, buffer);
-		glDispatchCompute(ceil(sortCounter / 1024.0), 1, 1);
+		glDispatchCompute(static_cast<GLuint>(ceil(sortCounter / 1024.0)), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	}
 }
@@ -178,9 +181,9 @@ void ParticleTechnique::sort(GLuint sortCounter, GLuint buffer)
 void ParticleTechnique::simulate()
 {
 	counter++;
-	float fdt = dt * 0.001;
-	if (fdt > 0.01)
-		fdt = 0.01;
+	float fdt = static_cast<float>(dt) * 0.001f;
+	if (fdt > 0.01f)
+		fdt = 0.01f;
 	time += fdt;
 	//nulovani sort counteru - kazdy snimek se vytvari znova, proto ze hodi pozice na zacatek
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
@@ -208,7 +211,7 @@ void ParticleTechnique::simulate()
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
-		glDispatchCompute(ceil((100) / 256.0), 1, 1);
+		glDispatchCompute(static_cast<GLuint>(ceil((100) / 256.0)), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 	}
 
@@ -218,14 +221,17 @@ void ParticleTechnique::simulate()
 	glUseProgram(gridDivideComputeProgram);
 	glUniform1ui(maxParticlesGridDivideUniform, (unsigned int)indices);
 	glUniform1f(sizeGridDivideUniform, GRID_SIZE);
-	glUniform1f(hGridDivideUniform, GRID_H);
+	glUniform1f(hGridDivideUniform, static_cast<float>(GRID_H));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 7, vbo[7]);
-	glDispatchCompute(ceil((pow(GRID_SIZE / GRID_H, 3) > indices ? pow(GRID_SIZE / GRID_H, 3) : indices) / 256.0), 1, 1);
+	glDispatchCompute(
+		static_cast<GLuint>(ceil((pow(GRID_SIZE / GRID_H, 3)) > static_cast<GLuint>(indices) ?
+		static_cast<GLuint>(pow(GRID_SIZE / GRID_H, 3)) :
+		static_cast<GLuint>(indices)) / 256.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	//precteni pozice v grid counteru, aby se vedelo kolik castic je ve mrizce
@@ -245,7 +251,7 @@ void ParticleTechnique::simulate()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 7, vbo[7]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, vbo[8]);
-	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	//simulace
@@ -253,37 +259,37 @@ void ParticleTechnique::simulate()
 	//vypocet density
 	glUseProgram(simulateDensityComputeProgram);
 	glUniform1ui(maxParticlesDensityUniform, (unsigned int)gridCounter);
-	glUniform1f(hGridSimulateDensityUniform, GRID_H);
+	glUniform1f(hGridSimulateDensityUniform, static_cast<float>(GRID_H));
 	glUniform1ui(gridMaxIndexDensityUniform, (unsigned int)pow((GRID_SIZE / GRID_H), 3));
 	glUniform1ui(gridSizeSimulateDensityUniform, (unsigned int)(GRID_SIZE / GRID_H));
-	glUniform1f(massSimulateDensityUniform, MASS);
+	glUniform1f(massSimulateDensityUniform, static_cast<float>(MASS));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, vbo[8]);
-	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	//vypocet pressure
 	glUseProgram(simulatePressureComputeProgram);
 	glUniform1ui(maxParticlesPressureUniform, (unsigned int)gridCounter);
 	glUniform1f(gasConstantPressureUniform, GAS_CONSTANT);
-	glUniform1f(restDensityPressureUniform, REST_DENSITY);
+	glUniform1f(restDensityPressureUniform, static_cast<float>(REST_DENSITY));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, vbo[8]);
-	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	//vypocet interni sily
 	glUseProgram(simulateForceComputeProgram);
 	glUniform1ui(maxParticlesForceUniform, (unsigned int)gridCounter);
-	glUniform1f(hGridSimulateForceUniform, GRID_H);
+	glUniform1f(hGridSimulateForceUniform, static_cast<float>(GRID_H));
 	glUniform1ui(gridMaxIndexForceUniform, (unsigned int)pow((GRID_SIZE / GRID_H), 3));
 	glUniform1ui(gridSizeSimulateForceUniform, (unsigned int)(GRID_SIZE / GRID_H));
-	glUniform1f(massSimulateForceUniform, MASS);
-	glUniform1f(viscositySimulateForceUniform, VISCOSITY);
+	glUniform1f(massSimulateForceUniform, static_cast<float>(MASS));
+	glUniform1f(viscositySimulateForceUniform, static_cast<float>(VISCOSITY));
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, vbo[8]);
-	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	//hleda castice s nezapornym casem zivota, ty odsimuluje a da je do sort bufferu
@@ -291,12 +297,12 @@ void ParticleTechnique::simulate()
 	glUniform1f(dtUniform, fdt);
 	glUniform3f(halfVectorUniform, halfVector.x, halfVector.y, halfVector.z);
 	glUniform1ui(maxParticlesUniform, (unsigned int)gridCounter);
-	glUniform1f(hGridSimulateUniform, GRID_H);
+	glUniform1f(hGridSimulateUniform, static_cast<float>(GRID_H));
 	glUniform1ui(gridMaxIndexUniform, (unsigned int)pow((GRID_SIZE / GRID_H), 3));
 	glUniform1ui(gridSizeSimulateUniform, (unsigned int)(GRID_SIZE / GRID_H));
 	glUniform1f(buoyancySimulateUniform, BUOYANCY);
-	glUniform1f(restDensitySimulateUniform, REST_DENSITY);
-	glUniform1f(gravitySimulateUniform, GRAVITY);
+	glUniform1f(restDensitySimulateUniform, static_cast<float>(REST_DENSITY));
+	glUniform1f(gravitySimulateUniform, static_cast<float>(GRAVITY));
 	glUniform1f(timeSimulateUniform, time);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
@@ -306,7 +312,7 @@ void ParticleTechnique::simulate()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, vbo[8]);
-	glDispatchCompute(ceil(gridCounter / 256.0), 1, 1);
+	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	//precteni pozice v sort counteru, aby se vedelo kolik castic se bude vykreslovat
@@ -332,8 +338,11 @@ void ParticleTechnique::draw()
 	glm::mat4 mv = v * m;
 
 	glUniformMatrix4fv(mvUniform, 1, GL_FALSE, glm::value_ptr(mv));
+	glUniformMatrix4fv(mvpDepthUniform, 1, GL_FALSE, glm::value_ptr(mvpDepth));
 	glUniformMatrix4fv(pUniform, 1, GL_FALSE, glm::value_ptr(p));
+	glUniform3f(ambientLightUniform, ambientLight.x, ambientLight.y, ambientLight.z);
 	glUniform1i(texDifSamplerUniform, texDifSampler);
+	glUniform1i(texDepthSamplerUniform, texDepthSampler);
 
 	glBindVertexArray(vao);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
@@ -343,17 +352,17 @@ void ParticleTechnique::draw()
 	glDisable(GL_BLEND);
 }
 
-void ParticleTechnique::setM(glm::mat4 mat)
+void ParticleTechnique::setM(const glm::mat4 &mat)
 {
 	m = mat;
 }
 
-void ParticleTechnique::setV(glm::mat4 mat)
+void ParticleTechnique::setV(const glm::mat4 &mat)
 {
 	v = mat;
 }
 
-void ParticleTechnique::setP(glm::mat4 mat)
+void ParticleTechnique::setP(const glm::mat4 &mat)
 {
 	p = mat;
 }
@@ -363,9 +372,26 @@ void ParticleTechnique::setDt(int t)
 	dt = t;
 }
 
-void ParticleTechnique::setViewPos(glm::vec3 pos)
+void ParticleTechnique::setViewPos(const glm::vec3 &pos)
 {
 	viewPos = pos;
+}
+
+void ParticleTechnique::setHalfVector(const glm::vec3 &halfVec, bool flip)
+{
+	halfVector = halfVec;
+	flippedHalfVector = flip;
+}
+
+void ParticleTechnique::setAmbientLight(const glm::vec3 &a)
+{
+	ambientLight = a;
+}
+
+void ParticleTechnique::setDepth(const glm::mat4 &mvp, GLuint texture)
+{
+	mvpDepth = mvp;
+	texDepth = texture;
 }
 
 void ParticleTechnique::bindTexDif(int t)
@@ -375,8 +401,9 @@ void ParticleTechnique::bindTexDif(int t)
 	texDifSampler = t;
 }
 
-void ParticleTechnique::setHalfVector(glm::vec3 halfVec, bool flip)
+void ParticleTechnique::bindTexDepth(int t)
 {
-	halfVector = halfVec;
-	flippedHalfVector = flip;
+	glActiveTexture(GL_TEXTURE0 + t);
+	glBindTexture(GL_TEXTURE_2D, texDepth);
+	texDepthSampler = t;
 }

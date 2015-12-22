@@ -1,6 +1,6 @@
 #include "BasicRenderer.h"
 
-BasicRenderer::BasicRenderer(glm::vec3 position)
+BasicRenderer::BasicRenderer(const glm::vec3 &position)
 {
 	pos = position;
 	technique.reset(new BasicTechnique);
@@ -17,7 +17,7 @@ bool BasicRenderer::initRenderer(Model &m, GLuint p)
 	return true;
 }
 
-void BasicRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType)
+void BasicRenderer::render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType)
 {
 	if (lights.size() > 0)
 		technique->setLightPos(lights[0].pos);
@@ -25,12 +25,21 @@ void BasicRenderer::render(Camera &cam, std::vector<Light> &lights, glm::vec3 am
 	technique->setP(cam.getProjection());
 	technique->setV(cam.getView());
 	technique->setViewPos(cam.getPos());
-	technique->bindTexDif(0);
 
 	glm::mat4 M = glm::mat4(1.0);
 	M = glm::translate(M, pos);
 
 	technique->setM(M);
+
+	const glm::mat4 bias(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.5f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f);
+
+	technique->setDepth(bias * mvpDepth * M, texDepth);
+	technique->bindTexDepth(1);
+	technique->bindTexDif(0);
 
 	technique->draw();
 

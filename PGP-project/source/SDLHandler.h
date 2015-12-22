@@ -13,7 +13,7 @@ private:
 	SDL_GLContext maincontext; //context handle
 	int width, height;
 	Uint32 lastTics;
-  Uint32 lastFPS;
+	Uint32 lastFPS;
 public:
 	SDLHandler(int w, int h);
 	bool init();

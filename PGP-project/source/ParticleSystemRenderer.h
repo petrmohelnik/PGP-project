@@ -14,12 +14,12 @@ private:
 	std::shared_ptr<ParticleTechnique> technique;
 	glm::vec3 pos;
 public:
-	ParticleSystemRenderer(glm::vec3 position);
+	ParticleSystemRenderer(const glm::vec3 &position);
 	bool initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP,
 		GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 		GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
-	void render(Camera &cam, std::vector<Light> &lights, glm::vec3 ambientLight, int dt, DrawType drawType);
-	void simulate(Camera &cam, std::vector<Light> &lights, int dt);
+	void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType);
+	void simulate(Camera &cam, const std::vector<Light> &lights, int dt);
 };
 
 #endif //PARTICLE_SYSTEM_RENDERER_H
