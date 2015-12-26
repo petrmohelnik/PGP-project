@@ -21,7 +21,7 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 	return true;
 }
 
-void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType)
+void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, const glm::mat4 &mvpDepth2, GLuint texDepth, GLuint texDepth2, GLuint texDepth3, int dt, DrawType drawType)
 {
 	technique->setAmbientLight(ambientLight);
 	technique->setP(cam.getProjection());
@@ -39,8 +39,8 @@ void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &light
 		0.0f, 0.0f, 0.5f, 0.0f,
 		0.5f, 0.5f, 0.5f, 1.0f);
 
-	technique->setDepth(bias * mvpDepth * M, texDepth);
-	technique->bindTexDepth(1);
+	technique->setDepth(bias * mvpDepth * M, bias * mvpDepth2 * M, texDepth, texDepth2, texDepth3);
+	technique->bindTexDepth(1, 2, 3);
 	technique->bindTexDif(0);
 
 	technique->draw();
@@ -54,13 +54,14 @@ void ParticleSystemRenderer::simulate(Camera &cam, const std::vector<Light> &lig
 	bool flipped;
 
 	if (glm::dot(cam.getDir(), lights[0].dir) > 0.0) {
-		halfVector = glm::normalize(cam.getDir() + lights[0].dir);
+		//halfVector = glm::normalize(cam.getDir() + lights[0].dir);
 		flipped = false;
 	}
 	else {
-		halfVector = glm::normalize(-cam.getDir() + lights[0].dir);
+		//halfVector = glm::normalize(-cam.getDir() + lights[0].dir);
 		flipped = true;
 	}
+	halfVector = -cam.getDir();
 
 	technique->setHalfVector(halfVector, flipped);
 	technique->simulate();

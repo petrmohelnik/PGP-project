@@ -67,6 +67,7 @@ protected:
 	GLuint simulateForceComputeProgram;
 	GLuint mvUniform;
 	GLuint mvpDepthUniform;
+	GLuint mvpDepth2Uniform;
 	GLuint pUniform;
 	GLuint dtUniform;
 	GLuint halfVectorUniform;
@@ -89,6 +90,8 @@ protected:
 	GLuint ambientLightUniform;
 	GLuint texDifSamplerUniform;
 	GLuint texDepthSamplerUniform;
+	GLuint texDepth2SamplerUniform;
+	GLuint texDepth3SamplerUniform;
 	GLuint maxParticlesGridDivideUniform;
 	GLuint sizeGridDivideUniform;
 	GLuint hGridDivideUniform;
@@ -108,11 +111,14 @@ protected:
 	GLuint viscositySimulateForceUniform;
 	GLuint texDif;
 	GLuint texDepth;
+	GLuint texDepth2;
+	GLuint texDepth3;
 	GLuint sortCounter;
 	glm::mat4 p;
 	glm::mat4 m;
 	glm::mat4 v;
 	glm::mat4 mvpDepth;
+	glm::mat4 mvpDepth2;
 	glm::vec3 halfVector;
 	bool flippedHalfVector;
 	int dt;
@@ -120,6 +126,8 @@ protected:
 	glm::vec3 ambientLight;
 	int texDifSampler;
 	int texDepthSampler;
+	int texDepth2Sampler;
+	int texDepth3Sampler;
 	int counter = 0;
 	float time = 0;
 public:
@@ -136,9 +144,9 @@ public:
 	void setViewPos(const glm::vec3 &pos);
 	void setHalfVector(const glm::vec3 &halfVec, bool flip);
 	void setAmbientLight(const glm::vec3 &a);
-	void setDepth(const glm::mat4 &mvp, GLuint texture);
+	void setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3);
 	void bindTexDif(int t);
-	void bindTexDepth(int t);
+	void bindTexDepth(int t, int t2, int t3);
 };
 
 #endif //PARTICLE_TECHNIQUE_H

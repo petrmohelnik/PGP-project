@@ -19,7 +19,7 @@ private:
 public:
 	BasicRenderer(const glm::vec3 &position);
 	bool initRenderer(Model &m, GLuint p);
-	void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType);
+	void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, const glm::mat4 &mvpDepth2, GLuint texDepth, GLuint texDepth2, GLuint texDepth3, int dt, DrawType drawType);
 };
 
 #endif //BASIC_RENDERER_H

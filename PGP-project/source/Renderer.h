@@ -19,7 +19,7 @@ public:
 	};
 
 	//virtual bool initRenderer(Model &m, GLuint p) = 0;
-	virtual void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, GLuint texDepth, int dt, DrawType drawType) = 0;
+	virtual void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, const glm::mat4 &mvpDepth2, GLuint texDepth, GLuint texDepth2, GLuint texDepth3, int dt, DrawType drawType) = 0;
 };
 
 #endif //RENDERER_H

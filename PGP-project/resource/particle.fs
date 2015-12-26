@@ -3,6 +3,8 @@
 uniform sampler2D texDifSampler;
 uniform vec3 ambientLight;
 uniform sampler2DShadow texDepthSampler;
+uniform sampler2DShadow texDepth2Sampler;
+uniform sampler2D texDepth3Sampler;
 
 in vec2 f_texCoord;
 in float f_ttl;

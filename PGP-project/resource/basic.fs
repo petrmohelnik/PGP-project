@@ -6,11 +6,14 @@ uniform vec3 lightPos;
 uniform vec3 ambientLight;
 uniform sampler2D texDifSampler;
 uniform sampler2DShadow texDepthSampler;
+uniform sampler2DShadow texDepth2Sampler;
+uniform sampler2D texDepth3Sampler;
 
 in vec3 f_pos;
 in vec3 f_norm;
 in vec2 f_texCoord;
 in vec4 f_depthPos;
+in vec4 f_depth2Pos;
 
 out vec4 glFragColor;
 
@@ -29,6 +32,7 @@ void main()
 	vec3 diffuseReflection = lightColor * max(0.0, dot(normal, lightDir));
 
 	float depthVis = textureProj(texDepthSampler, f_depthPos).r;// texture(texDepthSampler, f_depthPos.xyz / f_depthPos.w).r;
+	float depth2Vis = 1.0 - textureProj(texDepth3Sampler, f_depth2Pos).r * 10.0;
 
 	vec3 specularReflection;
 	if ((dot(normal, lightDir) < 0.0) || (depthVis == 0.0)) // light source on the wrong side?
@@ -40,5 +44,5 @@ void main()
 		specularReflection = lightColor * pow(max(0.0, dot(reflect(-lightDir, normal), viewDir)), shininess);
 	}
 
-	glFragColor = vec4(((diffuseReflection + specularReflection) * depthVis + ambientReflection) * texture(texDifSampler, f_texCoord).rgb, 1.0);
+	glFragColor = vec4(((diffuseReflection + specularReflection) * depthVis * depth2Vis + ambientReflection) * texture(texDifSampler, f_texCoord).rgb, 1.0);
 }

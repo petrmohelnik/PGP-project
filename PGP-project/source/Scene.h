@@ -10,8 +10,10 @@
 #include <SDL/SDL.h>
 #include "ParticleSystemRenderer.h"
 
-#define FBO_WIDTH 2048
-#define FBO_HEIGHT 2048
+#define FBO_SHADOW_WIDTH 2048
+#define FBO_SHADOW_HEIGHT 2048
+#define FBO_SHADOW_PARTICLE_WIDTH 2048
+#define FBO_SHADOW_PARTICLE_HEIGHT 2048
 
 class Scene
 {
@@ -31,6 +33,8 @@ public:
 	virtual void render(Uint32 dt);
 	const char* getName();
 	virtual void handleSdlEvent(SDL_Event &event);
+
+	static GLuint createFboMap(Uint32 w, Uint32 h, bool depth);
 };
 
 class MainScene : public Scene
@@ -38,9 +42,11 @@ class MainScene : public Scene
 private:
 	int cameraMode;
   GLuint fboDepth;
+  GLuint fboDepthParticle;
   //GLuint rboDepth;
   GLuint textureDepth;
-  GLuint textureDepthAccum;
+  GLuint textureDepthParticle;
+  GLuint textureDepthParticleAccum;
   std::shared_ptr<ParticleSystemRenderer> particleSystem;
 
 	void onKeyDown(SDL_Keycode key);

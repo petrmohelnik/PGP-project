@@ -22,10 +22,13 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 
 	mvUniform = glGetUniformLocation(program, "mv");
 	mvpDepthUniform = glGetUniformLocation(program, "mvpDepth");
+	mvpDepth2Uniform = glGetUniformLocation(program, "mvpDepth2");
 	pUniform = glGetUniformLocation(program, "p");
 	ambientLightUniform = glGetUniformLocation(program, "ambientLight");
 	texDifSamplerUniform = glGetUniformLocation(program, "texDifSampler");
 	texDepthSamplerUniform = glGetUniformLocation(program, "texDepthSampler");
+	texDepth2SamplerUniform = glGetUniformLocation(program, "texDepth2Sampler");
+	texDepth3SamplerUniform = glGetUniformLocation(program, "texDepth3Sampler");
 	dtUniform = glGetUniformLocation(simulateComputeProgram, "dt");
 	halfVectorUniform = glGetUniformLocation(simulateComputeProgram, "halfVector");
 	maxParticlesUniform = glGetUniformLocation(simulateComputeProgram, "maxParticles");
@@ -328,8 +331,15 @@ void ParticleTechnique::simulate()
 void ParticleTechnique::draw()
 {
 	//vykresleni
+	//glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendEquation(GL_FUNC_ADD);
+	if(flippedHalfVector)
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	else
+		//glBlendFuncSeparate(GL_DST_ALPHA, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+		//glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glDisable(GL_DEPTH_TEST);
 	//glDisable(GL_CULL_FACE);
 
@@ -339,10 +349,13 @@ void ParticleTechnique::draw()
 
 	glUniformMatrix4fv(mvUniform, 1, GL_FALSE, glm::value_ptr(mv));
 	glUniformMatrix4fv(mvpDepthUniform, 1, GL_FALSE, glm::value_ptr(mvpDepth));
+	glUniformMatrix4fv(mvpDepth2Uniform, 1, GL_FALSE, glm::value_ptr(mvpDepth2));
 	glUniformMatrix4fv(pUniform, 1, GL_FALSE, glm::value_ptr(p));
 	glUniform3f(ambientLightUniform, ambientLight.x, ambientLight.y, ambientLight.z);
 	glUniform1i(texDifSamplerUniform, texDifSampler);
 	glUniform1i(texDepthSamplerUniform, texDepthSampler);
+	glUniform1i(texDepth2SamplerUniform, texDepth2Sampler);
+	glUniform1i(texDepth3SamplerUniform, texDepth3Sampler);
 
 	glBindVertexArray(vao);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
@@ -350,6 +363,7 @@ void ParticleTechnique::draw()
 	glBindVertexArray(0);
 
 	glDisable(GL_BLEND);
+	//glDepthMask(GL_TRUE);
 }
 
 void ParticleTechnique::setM(const glm::mat4 &mat)
@@ -388,10 +402,13 @@ void ParticleTechnique::setAmbientLight(const glm::vec3 &a)
 	ambientLight = a;
 }
 
-void ParticleTechnique::setDepth(const glm::mat4 &mvp, GLuint texture)
+void ParticleTechnique::setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3)
 {
 	mvpDepth = mvp;
+	mvpDepth2 = mvp2;
 	texDepth = texture;
+	texDepth2 = texture2;
+	texDepth3 = texture3;
 }
 
 void ParticleTechnique::bindTexDif(int t)
@@ -401,9 +418,15 @@ void ParticleTechnique::bindTexDif(int t)
 	texDifSampler = t;
 }
 
-void ParticleTechnique::bindTexDepth(int t)
+void ParticleTechnique::bindTexDepth(int t, int t2, int t3)
 {
 	glActiveTexture(GL_TEXTURE0 + t);
 	glBindTexture(GL_TEXTURE_2D, texDepth);
 	texDepthSampler = t;
+	glActiveTexture(GL_TEXTURE0 + t2);
+	glBindTexture(GL_TEXTURE_2D, texDepth2);
+	texDepth2Sampler = t2;
+	glActiveTexture(GL_TEXTURE0 + t3);
+	glBindTexture(GL_TEXTURE_2D, texDepth3);
+	texDepth3Sampler = t3;
 }
