@@ -1,13 +1,28 @@
 #include "Model.h"
 
+Material::Material() : emission(0.0f)
+{
+
+}
+
 void Material::setDifTex(const Texture &tex)
 {
 	difTex = tex;
 }
 
+void Material::setEmission(const glm::vec3 &e)
+{
+	emission = e;
+}
+
 Texture Material::getDifTex()
 {
 	return difTex;
+}
+
+const glm::vec3 &Material::getEmission()
+{
+	return emission;
 }
 
 void Mesh::addVertex(glm::vec3 vertex, glm::vec3 normal, glm::vec2 texCoord)

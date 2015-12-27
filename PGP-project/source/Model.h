@@ -17,9 +17,13 @@ class Material
 {
 private:
 	Texture difTex;
+	glm::vec3 emission;
 public:
+	Material();
 	void setDifTex(const Texture &tex);
+	void setEmission(const glm::vec3 &e);
 	Texture getDifTex();
+	const glm::vec3 &getEmission();
 };
 
 class Mesh

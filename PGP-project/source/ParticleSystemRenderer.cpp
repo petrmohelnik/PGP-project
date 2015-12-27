@@ -6,8 +6,8 @@ ParticleSystemRenderer::ParticleSystemRenderer(const glm::vec3 &position)
 	technique.reset(new ParticleTechnique);
 }
 
-bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP,
-	GLuint sortComputeP, GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint pShaft, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP, GLuint sortComputeP,
+	GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 	GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP)
 {
 	if (m.getMeshesSize() < 1) {
@@ -15,7 +15,7 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 		return false;
 	}
 
-	technique->init(*(m.getMeshes()[0]), count, p, simulateComputeP, emitComputeP, sortPreComputeP, sortComputeP, sortLocalComputeP,
+	technique->init(*(m.getMeshes()[0]), count, p, pShaft, simulateComputeP, emitComputeP, sortPreComputeP, sortComputeP, sortLocalComputeP,
 		sortLocalInnerComputeP, gridDivideComputeP, gridFindStartComputeP,
 		simulateDensityComputeP, simulatePressureComputeP, simulateForceComputeP);
 	return true;
@@ -23,7 +23,7 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 
 void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, const glm::mat4 &mvpDepth2, GLuint texDepth, GLuint texDepth2, GLuint texDepth3, int dt, DrawType drawType)
 {
-	technique->setAmbientLight(ambientLight);
+	technique->setAmbientLight(ambientLight + technique->getMesh()->getMaterial()->getEmission());
 	technique->setP(cam.getProjection());
 	technique->setV(cam.getView());
 	technique->setViewPos(cam.getPos());
@@ -44,6 +44,22 @@ void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &light
 	technique->bindTexDif(0);
 
 	technique->draw();
+}
+
+void ParticleSystemRenderer::renderShafts(Camera &cam, int dt)
+{
+	technique->setAmbientLight(technique->getMesh()->getMaterial()->getEmission());
+	technique->setP(cam.getProjection());
+	technique->setV(cam.getView());
+	technique->setViewPos(cam.getPos());
+
+	glm::mat4 M = glm::mat4(1.0);
+	M = glm::translate(M, pos);
+
+	technique->setM(M);
+	technique->bindTexDif(0);
+
+	technique->drawShafts();
 }
 
 void ParticleSystemRenderer::simulate(int dt)
@@ -72,3 +88,7 @@ void ParticleSystemRenderer::sort(Camera &cam, const std::vector<Light> &lights)
 	technique->sortParticles();
 }
 
+void *ParticleSystemRenderer::getTechnique()
+{
+	return technique.get();
+}

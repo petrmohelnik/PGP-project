@@ -1,8 +1,10 @@
 #include "BasicTechnique.h"
 
-void BasicTechnique::init(Mesh &m, GLuint p)
+void BasicTechnique::init(Mesh &m, GLuint p, GLuint pShaft)
 {
+	mesh = &m;
 	program = p;
+	programShaft = pShaft;
 
 	GLuint vbo[3];
 	glGenVertexArrays(1, &vao);
@@ -45,6 +47,18 @@ void BasicTechnique::init(Mesh &m, GLuint p)
 
 	glBindVertexArray(0);
 
+	// shafts
+	glGenVertexArrays(1, &vaoShaft);
+	glBindVertexArray(vaoShaft);
+	mvpUniformShaft = glGetUniformLocation(programShaft, "mvp");
+	ambientLightUniformShaft = glGetUniformLocation(programShaft, "ambientLight");
+	attr = glGetAttribLocation(programShaft, "v_pos");
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glVertexAttribPointer(attr, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(attr);
+	glBindVertexArray(0);
+	// shafts end
+
 	glGenTextures(1, &texDif);
 	glBindTexture(GL_TEXTURE_2D, texDif);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -73,6 +87,20 @@ void BasicTechnique::draw()
 	glUniform1i(texDepth3SamplerUniform, texDepth3Sampler);
 	
 	glBindVertexArray(vao);
+	glDrawArrays(drawMode, 0, indices);
+	glBindVertexArray(0);
+}
+
+void BasicTechnique::drawShafts()
+{
+	glUseProgram(programShaft);
+
+	glm::mat4 mvp = p * v * m;
+
+	glUniformMatrix4fv(mvpUniformShaft, 1, GL_FALSE, glm::value_ptr(mvp));
+	glUniform3f(ambientLightUniformShaft, ambientLight.x, ambientLight.y, ambientLight.z);
+
+	glBindVertexArray(vaoShaft);
 	glDrawArrays(drawMode, 0, indices);
 	glBindVertexArray(0);
 }
@@ -137,4 +165,9 @@ void BasicTechnique::bindTexDepth(int t, int t2, int t3)
 	glActiveTexture(GL_TEXTURE0 + t3);
 	glBindTexture(GL_TEXTURE_2D, texDepth3);
 	texDepth3Sampler = t3;
+}
+
+Mesh *BasicTechnique::getMesh()
+{
+	return mesh;
 }

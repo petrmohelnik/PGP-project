@@ -9,6 +9,7 @@
 #include <memory>
 #include <SDL/SDL.h>
 #include "ParticleSystemRenderer.h"
+#include "BasicTechnique.h"
 
 #define FBO_SHADOW_WIDTH 2048
 #define FBO_SHADOW_HEIGHT 2048

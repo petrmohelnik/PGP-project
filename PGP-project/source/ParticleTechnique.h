@@ -52,9 +52,11 @@ class ParticleTechnique
 {
 protected:
 	GLuint vao;
+	GLuint vaoShaft;
 	GLuint vbo[9]; //pool, sortList, deadList, sortCounter, deadCounter, gridList, startIndexList, gridCounter, sortedParticlePool
 	int indices; //amount of indices in vao
 	GLuint program;
+	GLuint programShaft;
 	GLuint simulateComputeProgram;
 	GLuint emitComputeProgram;
 	GLuint sortPreComputeProgram;
@@ -116,6 +118,12 @@ protected:
 	GLuint texDepth2;
 	GLuint texDepth3;
 	GLuint sortCounter;
+
+	GLuint mvUniformShaft;
+	GLuint pUniformShaft;
+	GLuint ambientLightUniformShaft;
+	GLuint texDifSamplerUniformShaft;
+
 	glm::mat4 p;
 	glm::mat4 m;
 	glm::mat4 v;
@@ -133,12 +141,15 @@ protected:
 	GLuint gridCounter;
 	int counter = 0;
 	float time = 0;
+	Mesh *mesh;
+
 public:
-	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP, GLuint sortComputeP,
-		GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+	void init(Mesh &m, int count, GLuint p, GLuint pShaft, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP, GLuint sortComputeP, GLuint sortLocalComputeP,
+		GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 		GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
 	void simulate();
-	void draw();
+	virtual void draw();
+	virtual void drawShafts();
 	void sort(GLuint sortCounter, GLuint buffer);
 	void sortParticles();
 	void setM(const glm::mat4 &mat);
@@ -151,6 +162,8 @@ public:
 	void setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3);
 	void bindTexDif(int t);
 	void bindTexDepth(int t, int t2, int t3);
+
+	Mesh *getMesh();
 };
 
 #endif //PARTICLE_TECHNIQUE_H

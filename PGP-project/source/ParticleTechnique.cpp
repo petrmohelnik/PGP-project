@@ -1,10 +1,13 @@
 #include "ParticleTechnique.h"
 
-void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP,
-	GLuint sortComputeP, GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint pShaft, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP, GLuint sortComputeP, GLuint sortLocalComputeP,
+	GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 	GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP)
 {
+	mesh = &m;
 	program = p;
+	programShaft = pShaft;
+
 	simulateComputeProgram = simulateComputeP;
 	emitComputeProgram = emitComputeP;
 	sortPreComputeProgram = sortPreComputeP;
@@ -96,6 +99,20 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	glVertexAttribIPointer(attr, 1, GL_UNSIGNED_INT, sizeof(SortList), (GLvoid*)offsetof(SortList, index));
 	glEnableVertexAttribArray(attr);
 	glBindVertexArray(0);
+
+	// shafts
+	glGenVertexArrays(1, &vaoShaft);
+	glBindVertexArray(vaoShaft);
+	mvUniformShaft = glGetUniformLocation(programShaft, "mv");
+	pUniformShaft = glGetUniformLocation(programShaft, "p");
+	ambientLightUniformShaft = glGetUniformLocation(programShaft, "ambientLight");
+	texDifSamplerUniformShaft = glGetUniformLocation(programShaft, "texDifSampler");
+	attr = glGetAttribLocation(programShaft, "particleID");
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glVertexAttribIPointer(attr, 1, GL_UNSIGNED_INT, sizeof(SortList), (GLvoid*)offsetof(SortList, index));
+	glEnableVertexAttribArray(attr);
+	glBindVertexArray(0);
+	// shafts end
 
 	std::vector<DeadList> deadList;
 	deadList.reserve(indices);
@@ -378,6 +395,28 @@ void ParticleTechnique::draw()
 	//glDepthMask(GL_TRUE);
 }
 
+void ParticleTechnique::drawShafts()
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glUseProgram(programShaft);
+
+	glm::mat4 mv = v * m;
+
+	glUniformMatrix4fv(mvUniformShaft, 1, GL_FALSE, glm::value_ptr(mv));
+	glUniformMatrix4fv(pUniformShaft, 1, GL_FALSE, glm::value_ptr(p));
+	glUniform3f(ambientLightUniformShaft, ambientLight.x, ambientLight.y, ambientLight.z);
+	glUniform1i(texDifSamplerUniformShaft, texDifSampler);
+
+	glBindVertexArray(vaoShaft);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
+	glDrawArrays(GL_POINTS, 0, sortCounter);
+	glBindVertexArray(0);
+
+	glDisable(GL_BLEND);
+}
+
 void ParticleTechnique::setM(const glm::mat4 &mat)
 {
 	m = mat;
@@ -442,4 +481,9 @@ void ParticleTechnique::bindTexDepth(int t, int t2, int t3)
 	glActiveTexture(GL_TEXTURE0 + t3);
 	glBindTexture(GL_TEXTURE_2D, texDepth3);
 	texDepth3Sampler = t3;
+}
+
+Mesh *ParticleTechnique::getMesh()
+{
+	return mesh;
 }
