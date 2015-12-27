@@ -1,0 +1,100 @@
+%--------------------------------------------------------------------------------
+%\documentclass{article}
+
+\documentclass[a4paper, 12pt]{article}
+\usepackage[bf]{caption}
+\usepackage{hyperref}
+\usepackage[all]{hypcap}
+\usepackage[latin2]{inputenc}
+\usepackage[T1, IL2]{fontenc}
+\usepackage{graphicx}
+\usepackage[czech, english]{babel}
+\selectlanguage{czech}
+\usepackage{subfig}                % \subfloat
+\usepackage{color}
+\usepackage{url}
+%\inputencoding{utf8}
+%\usepackage[bf]{caption2}
+\usepackage{hyperref}
+\usepackage[all]{hypcap}
+\hypersetup{colorlinks=false, linkbordercolor=1 1 1, citebordercolor=1 1 1}
+\usepackage[right]{lineno}
+\renewcommand\linenumberfont{\normalfont\tiny\color{blue}}
+
+
+\title{Jak psat dokumentaci k projektum}
+\author{Franta Loginoviè <xlogin00@stud.fit.vutbr.cz>}
+\date{\today}
+
+
+%--------------------------------------------------------------------------------
+
+
+\begin{document}
+\selectlanguage{czech}
+\maketitle
+
+\section{Úvod}
+
+Tady by mìlo být napsané o èem práce je a k èemu to je dobré. Napøíklad: Tato práce se zabývá akcelerací
+raytracingu na CUDA. Raytracing se pou¾ívá ve fotorealistické grafice a herní grafice. CUDA umo¾òuje
+akceleraci ...
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Teorie}
+
+Tady v té kapitole je napsané jak to funguje. Ideálnì nìjaka ta rovnice, napø. \ref{moje-rovnice}. Potom by
+tady mìla byt uvedena literatura, ze které bylo èerpano, napøíklad "Metody sledování paprsku jsou popsané v \cite{Cox2008} \cite{zemcik2006}"
+
+
+\begin{equation}
+  \label{moje-rovnice}
+  c = a + b
+\end{equation}
+
+Na obrázku \ref{fig:obrazek} je ukázané jak to funguje. Nìjaké schémátko pipeline..
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=5cm,keepaspectratio]{fig/obrazek.jpg}
+  \caption{Nìjaký ten diagram, tøeba pøevzaný z \cite{wikipedia}}
+  \label{fig:obrazek}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Popis øe¹ení}
+
+Tady struènì popi¹te, jakým zpùsobem jste prakticky projekt øe¹ili. Uveïte zejména pou¾ité
+technologie a algoritmy. Zamìøte se hlavnì na zajímavé a dùle¾ité èásti implementace a také na
+problémy, které jste øe¹ili. Není nutné popisovat ka¾dou tøídu.
+
+Napø. uveïte, jak jste matematický popis z pøedchozí kapitoly implementovali prakticky.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Vyhodnocení}
+
+Tady by mìlo být napsané jak to funguje. Proto¾e se jedná o poèítaèovou grafiku nebo
+vidìní, tak by tady mìl byt screenshot, ze ktereho bude poznat jak to funguje.
+K tomu by mìla být idealnì tabulka s vyhodnocením jak pøesnì/rychle to funguje.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Závìr}
+
+Tady by mìlo být struènì napsané jak to funguje.
+
+
+\bibliographystyle{alpha}
+\begin{flushleft}
+  \bibliography{project}
+\end{flushleft}
+
+%\appendix
+%\newpage
+%\section{}
+
+\end{document}
