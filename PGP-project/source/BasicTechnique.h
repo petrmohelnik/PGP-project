@@ -9,8 +9,10 @@ class BasicTechnique
 {
 protected:
 	GLuint vao;
+	GLuint vaoShaft;
 	int indices; //amount of indices in vao
 	GLuint program;
+	GLuint programShaft;
 	GLuint mvpUniform;
 	GLuint mvpDepthUniform;
 	GLuint mvpDepth2Uniform;
@@ -27,6 +29,10 @@ protected:
 	GLuint texDepth;
 	GLuint texDepth2;
 	GLuint texDepth3;
+
+	GLuint mvpUniformShaft;
+	GLuint ambientLightUniformShaft;
+
 	glm::mat4 p;
 	glm::mat4 m;
 	glm::mat4 v;
@@ -41,9 +47,12 @@ protected:
 	int texDepth2Sampler;
 	int texDepth3Sampler;
 	GLuint drawMode;
+	Mesh *mesh;
+
 public:
-	void init(Mesh &m, GLuint p);
+	void init(Mesh &m, GLuint p, GLuint pShaft);
 	virtual void draw();
+	virtual void drawShafts();
 	void setM(const glm::mat4 &mat);
 	void setV(const glm::mat4 &mat);
 	void setP(const glm::mat4 &mat);
@@ -53,6 +62,8 @@ public:
 	void setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3);
 	void bindTexDif(int t);
 	void bindTexDepth(int t, int t2, int t3);
+
+	Mesh *getMesh();
 };
 
 #endif //BASIC_TECHNIQUE_H

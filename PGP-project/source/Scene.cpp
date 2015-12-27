@@ -220,7 +220,10 @@ void MainScene::render(Uint32 dt)
 	const glm::mat4 mvpDepth = camera.getProjection() * camera.getView();
 
 	for(unsigned int i = 0; i < objects.size(); i++)
-		objects[i]->render(camera, lights, ambientLight, mvpDepth, glm::mat4(), 0, 0, 0, dt, Renderer::DRAW_SHADOW);
+	{
+		if(reinterpret_cast<BasicTechnique *>(objects[i]->getTechnique())->getMesh()->getMaterial()->getEmission().x == 0.0f)
+			objects[i]->render(camera, lights, ambientLight, mvpDepth, glm::mat4(), 0, 0, 0, dt, Renderer::DRAW_SHADOW);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fboDepthParticle);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -241,8 +244,10 @@ void MainScene::render(Uint32 dt)
 	particleSystem->simulate(camera, lights, dt / 2); //dal sem casticovej system zvlast a simulaci sem vytahl z draw a dal do samostatne metody
 
 	for(unsigned int i = 0; i < objects.size(); i++)
+		//objects[i]->renderShafts(camera, dt);
 		objects[i]->render(camera, lights, ambientLight, mvpDepth, mvpDepth2, textureDepth, textureDepthParticle, textureDepthParticleAccum, dt, Renderer::DRAW_STANDARD);
 
+	//particleSystem->renderShafts(camera, dt);
 	particleSystem->render(camera, lights, ambientLight, mvpDepth, mvpDepth, textureDepth, textureDepthParticle, textureDepthParticleAccum, dt, Renderer::DRAW_STANDARD);
 
 	// testing only, don't panic (SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) --------------------------

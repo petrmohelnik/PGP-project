@@ -57,179 +57,100 @@ int main(int argc, char **argv)
 	Application app;
 	FileSystem f;
 	Shader s;
-	string strVs, strFs, strPVs, strPGs, strPFs, strEmitPCs, strSortPCs, strSortLocalPCs,
+	string strVs, strFs, strPVs, strPGs, strPFs,
+		strShaftsColorVs, strShaftsColorFs, strShaftsColorParVs, strShaftsColorParGs, strShaftsColorParFs,
+		strShaftsBlurVs, strShaftsBlurGs, strShaftsBlurFs, strShaftsOutVs, strShaftsOutGs, strShaftsOutFs,
+		strEmitPCs, strSortPCs, strSortLocalPCs,
 		strSortLocalInnerPCs, strSimulatePCs, strGridDividePCs, strGridFindStartPCs,
 		strSimulateDensityPCs, strSimulatePressurePCs, strSimulateForcePCs;
-	if (!f.loadFile("resource/basic.vs", strVs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/basic.fs", strFs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/particle.vs", strPVs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/particle.gs", strPGs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/particle.fs", strPFs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/simulate_particle.comp", strSimulatePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/simulate_particle_density.comp", strSimulateDensityPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/simulate_particle_pressure.comp", strSimulatePressurePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/simulate_particle_force.comp", strSimulateForcePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/emit_particle.comp", strEmitPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/sort_particle.comp", strSortPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/sort_particle_local.comp", strSortLocalPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/sort_particle_local_inner.comp", strSortLocalInnerPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/grid_particle_divide.comp", strGridDividePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!f.loadFile("resource/grid_particle_find_start.comp", strGridFindStartPCs)) {
-		cin.get();
-		return -1;
-	}
+	if (!f.loadFile("resource/basic.vs", strVs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/basic.fs", strFs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/particle.vs", strPVs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/particle.gs", strPGs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/particle.fs", strPFs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsColorBasic.vs", strShaftsColorVs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsColorBasic.fs", strShaftsColorFs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsColorParticle.vs", strShaftsColorParVs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsColorParticle.gs", strShaftsColorParGs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsColorParticle.fs", strShaftsColorParFs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsBlur.vs", strShaftsBlurVs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsBlur.gs", strShaftsBlurGs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsBlur.fs", strShaftsBlurFs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsOut.vs", strShaftsOutVs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsOut.gs", strShaftsOutGs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/shaftsOut.fs", strShaftsOutFs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/simulate_particle.comp", strSimulatePCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/simulate_particle_density.comp", strSimulateDensityPCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/simulate_particle_pressure.comp", strSimulatePressurePCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/simulate_particle_force.comp", strSimulateForcePCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/emit_particle.comp", strEmitPCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/sort_particle.comp", strSortPCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/sort_particle_local.comp", strSortLocalPCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/sort_particle_local_inner.comp", strSortLocalInnerPCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/grid_particle_divide.comp", strGridDividePCs)) { cin.get(); return -1; }
+	if (!f.loadFile("resource/grid_particle_find_start.comp", strGridFindStartPCs)) { cin.get(); return -1; }
+
 	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPCs, SortLocalPCs, SortLocalInnerPCs,
+		ShaftsColorPVs, ShaftsColorPFs, ShaftsColorParPVs, ShaftsColorParPGs, ShaftsColorParPFs,
+		ShaftsBlurPVs, ShaftsBlurPGs, ShaftsBlurPFs, ShaftsOutPVs, ShaftsOutPGs, ShaftsOutPFs,
 		GridDividePCs, GridParticleStartPCs, SimulateDensityPCs, SimulatePressurePCs, SimulateForcePCs;
-	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strFs.c_str(), GL_FRAGMENT_SHADER, "basic_fs", fs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(vs, fs, "basic_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strPVs.c_str(), GL_VERTEX_SHADER, "particle_vs", Pvs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strPGs.c_str(), GL_GEOMETRY_SHADER, "particle_gs", Pgs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strPFs.c_str(), GL_FRAGMENT_SHADER, "particle_fs", Pfs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(Pvs, Pgs, Pfs, "particle_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strSimulatePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_compute", SimulatePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(SimulatePCs, "simulate_particle_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strSimulateDensityPCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_density_compute", SimulateDensityPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(SimulateDensityPCs, "simulate_particle_density_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strSimulatePressurePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_pressure_compute", SimulatePressurePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(SimulatePressurePCs, "simulate_particle_pressure_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strSimulateForcePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_force_compute", SimulateForcePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(SimulateForcePCs, "simulate_particle_force_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strEmitPCs.c_str(), GL_COMPUTE_SHADER, "emit_particle_compute", EmitPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(EmitPCs, "emit_particle_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strSortPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_compute", SortPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(SortPCs, "sort_particle_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strSortLocalPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_local_compute", SortLocalPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(SortLocalPCs, "sort_particle_local_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strSortLocalInnerPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_local_inner_compute", SortLocalInnerPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(SortLocalInnerPCs, "sort_particle_local_inner_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strGridDividePCs.c_str(), GL_COMPUTE_SHADER, "grid_particle_divide_compute", GridDividePCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(GridDividePCs, "grid_particle_divide_compute_program")) {
-		cin.get();
-		return -1;
-	}
-	if (!s.compileShader(strGridFindStartPCs.c_str(), GL_COMPUTE_SHADER, "grid_particle_find_start_compute", GridParticleStartPCs)) {
-		cin.get();
-		return -1;
-	}
-	if (!s.linkProgram(GridParticleStartPCs, "grid_particle_start_compute_program")) {
-		cin.get();
-		return -1;
-	}
+	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) { cin.get(); return -1; }
+	if (!s.compileShader(strFs.c_str(), GL_FRAGMENT_SHADER, "basic_fs", fs)) { cin.get(); return -1; }
+	if (!s.linkProgram(vs, fs, "basic_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strPVs.c_str(), GL_VERTEX_SHADER, "particle_vs", Pvs)) { cin.get(); return -1; }
+	if (!s.compileShader(strPGs.c_str(), GL_GEOMETRY_SHADER, "particle_gs", Pgs)) { cin.get(); return -1; }
+	if (!s.compileShader(strPFs.c_str(), GL_FRAGMENT_SHADER, "particle_fs", Pfs)) { cin.get(); return -1; }
+	if (!s.linkProgram(Pvs, Pgs, Pfs, "particle_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strShaftsColorVs.c_str(), GL_VERTEX_SHADER, "shafts_color_basic_vs", ShaftsColorPVs)) { cin.get(); return -1; }
+	if (!s.compileShader(strShaftsColorFs.c_str(), GL_FRAGMENT_SHADER, "shafts_color_basic_fs", ShaftsColorPFs)) { cin.get(); return -1; }
+	if (!s.linkProgram(ShaftsColorPVs, ShaftsColorPFs, "shafts_color_basic_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strShaftsColorParVs.c_str(), GL_VERTEX_SHADER, "shafts_color_particle_vs", ShaftsColorParPVs)) { cin.get(); return -1; }
+	if (!s.compileShader(strShaftsColorParGs.c_str(), GL_GEOMETRY_SHADER, "shafts_color_particle_gs", ShaftsColorParPGs)) { cin.get(); return -1; }
+	if (!s.compileShader(strShaftsColorParFs.c_str(), GL_FRAGMENT_SHADER, "shafts_color_particle_fs", ShaftsColorParPFs)) { cin.get(); return -1; }
+	if (!s.linkProgram(ShaftsColorParPVs, ShaftsColorParPGs, ShaftsColorParPFs, "shafts_color_particle_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strShaftsBlurVs.c_str(), GL_VERTEX_SHADER, "shafts_blur_vs", ShaftsBlurPVs)) { cin.get(); return -1; }
+	if (!s.compileShader(strShaftsBlurGs.c_str(), GL_GEOMETRY_SHADER, "shafts_blur_gs", ShaftsBlurPGs)) { cin.get(); return -1; }
+	if (!s.compileShader(strShaftsBlurFs.c_str(), GL_FRAGMENT_SHADER, "shafts_blur_fs", ShaftsBlurPFs)) { cin.get(); return -1; }
+	if (!s.linkProgram(ShaftsBlurPVs, ShaftsBlurPGs, ShaftsBlurPFs, "shafts_blur_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strShaftsOutVs.c_str(), GL_VERTEX_SHADER, "shafts_out_vs", ShaftsOutPVs)) { cin.get(); return -1; }
+	if (!s.compileShader(strShaftsOutGs.c_str(), GL_GEOMETRY_SHADER, "shafts_out_gs", ShaftsOutPGs)) { cin.get(); return -1; }
+	if (!s.compileShader(strShaftsOutFs.c_str(), GL_FRAGMENT_SHADER, "shafts_out_fs", ShaftsOutPFs)) { cin.get(); return -1; }
+	if (!s.linkProgram(ShaftsOutPVs, ShaftsOutPGs, ShaftsOutPFs, "shafts_out_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strSimulatePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_compute", SimulatePCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SimulatePCs, "simulate_particle_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strSimulateDensityPCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_density_compute", SimulateDensityPCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SimulateDensityPCs, "simulate_particle_density_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strSimulatePressurePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_pressure_compute", SimulatePressurePCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SimulatePressurePCs, "simulate_particle_pressure_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strSimulateForcePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_force_compute", SimulateForcePCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SimulateForcePCs, "simulate_particle_force_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strEmitPCs.c_str(), GL_COMPUTE_SHADER, "emit_particle_compute", EmitPCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(EmitPCs, "emit_particle_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strSortPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_compute", SortPCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SortPCs, "sort_particle_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strSortLocalPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_local_compute", SortLocalPCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SortLocalPCs, "sort_particle_local_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strSortLocalInnerPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_local_inner_compute", SortLocalInnerPCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SortLocalInnerPCs, "sort_particle_local_inner_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strGridDividePCs.c_str(), GL_COMPUTE_SHADER, "grid_particle_divide_compute", GridDividePCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(GridDividePCs, "grid_particle_divide_compute_program")) { cin.get(); return -1; }
+
+	if (!s.compileShader(strGridFindStartPCs.c_str(), GL_COMPUTE_SHADER, "grid_particle_find_start_compute", GridParticleStartPCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(GridParticleStartPCs, "grid_particle_start_compute_program")) { cin.get(); return -1; }
 
 	std::shared_ptr<Material> matGrid(new Material);
 	Texture texGrid;
@@ -243,13 +164,17 @@ int main(int argc, char **argv)
 		return false;
 	mat->setDifTex(tex);
 
+	std::shared_ptr<Material> matSun(new Material);
+	matSun->setDifTex(tex);
+	matSun->setEmission(glm::vec3(1.0f));
+
 	Model modelPlane;
 	std::shared_ptr<Mesh> planeMesh(new Mesh);
 	planeMesh->createPlane();
 	planeMesh->addMaterial(matGrid);
 	modelPlane.addMesh(planeMesh);
 	std::shared_ptr<BasicRenderer> planeRenderer(new BasicRenderer(glm::vec3(0.0f, 0.0f, 0.0f)));
-	if(!planeRenderer->initRenderer(modelPlane, s.getProgram("basic_program")))
+	if(!planeRenderer->initRenderer(modelPlane, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program")))
 	{
 		cin.get();
 		return -1;
@@ -274,11 +199,24 @@ int main(int argc, char **argv)
 	for(int i = 0; i < spheresCount; i++)
 	{
 		sphereRenderer[i] = std::make_shared<BasicRenderer>(spherePos[i]);
-		if(!sphereRenderer[i]->initRenderer(modelSphere, s.getProgram("basic_program")))
+		if(!sphereRenderer[i]->initRenderer(modelSphere, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program")))
 		{
 			cin.get();
 			return -1;
 		}
+	}
+
+	Model modelSphereSun;
+	std::shared_ptr<Mesh> sphereMeshSun(new Mesh);
+	sphereMeshSun->createSphere(2.0f, 108);
+	sphereMeshSun->addMaterial(matSun);
+	modelSphereSun.addMesh(sphereMeshSun);
+	std::shared_ptr<BasicRenderer> sphereSunRenderer;
+	sphereSunRenderer = std::make_shared<BasicRenderer>(glm::vec3(15.0f, 21.0f, 15.0f));
+	if(!sphereSunRenderer->initRenderer(modelSphereSun, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program")))
+	{
+		cin.get();
+		return -1;
 	}
 
 	Model particles;
@@ -292,7 +230,7 @@ int main(int argc, char **argv)
 	particlesMesh->addMaterial(particleMat);
 	particles.addMesh(particlesMesh);
 	std::shared_ptr<ParticleSystemRenderer> ParticleSystemRenderer(new ParticleSystemRenderer(glm::vec3(0.0)));
-	if (!ParticleSystemRenderer->initRenderer(particles, 200000, s.getProgram("particle_program"),
+	if (!ParticleSystemRenderer->initRenderer(particles, 200000, s.getProgram("particle_program"), s.getProgram("shafts_color_particle_program"),
 		s.getProgram("simulate_particle_compute_program"), s.getProgram("emit_particle_compute_program"),
 		s.getProgram("sort_particle_compute_program"), s.getProgram("sort_particle_local_compute_program"),
 		s.getProgram("sort_particle_local_inner_compute_program"),
@@ -307,6 +245,7 @@ int main(int argc, char **argv)
 	scene->setName("mainScene");
 	for(int i = 0; i < spheresCount; i++)
 		scene->addObject(sphereRenderer[i]);
+	scene->addObject(sphereSunRenderer);
 	scene->addObject(planeRenderer);
 	scene->addParticleSystem(ParticleSystemRenderer);
 	scene->initCamera(45.0f, W_WIDTH, W_HEIGHT, 0.1f, 100.0f, CAM_TRANS_ROT);
