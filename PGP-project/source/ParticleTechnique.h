@@ -57,6 +57,7 @@ protected:
 	GLuint program;
 	GLuint simulateComputeProgram;
 	GLuint emitComputeProgram;
+	GLuint sortPreComputeProgram;
 	GLuint sortComputeProgram;
 	GLuint sortLocalComputeProgram;
 	GLuint sortLocalInnerComputeProgram;
@@ -80,6 +81,7 @@ protected:
 	GLuint gravitySimulateUniform;
 	GLuint timeSimulateUniform;
 	GLuint maxEmitUniform;
+	GLuint maxParticlesSortPreUniform;
 	GLuint maxSortUniform;
 	GLuint maxSortLocalUniform;
 	GLuint degreeSortUniform;
@@ -128,15 +130,17 @@ protected:
 	int texDepthSampler;
 	int texDepth2Sampler;
 	int texDepth3Sampler;
+	GLuint gridCounter;
 	int counter = 0;
 	float time = 0;
 public:
-	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, 
-		GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+	void init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP, GLuint sortComputeP,
+		GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 		GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
 	void simulate();
 	void draw();
 	void sort(GLuint sortCounter, GLuint buffer);
+	void sortParticles();
 	void setM(const glm::mat4 &mat);
 	void setV(const glm::mat4 &mat);
 	void setP(const glm::mat4 &mat);

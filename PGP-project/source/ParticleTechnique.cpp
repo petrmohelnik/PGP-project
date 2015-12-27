@@ -1,12 +1,13 @@
 #include "ParticleTechnique.h"
 
-void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP, GLuint sortLocalComputeP, 
-	GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP,
+	GLuint sortComputeP, GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 	GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP)
 {
 	program = p;
 	simulateComputeProgram = simulateComputeP;
 	emitComputeProgram = emitComputeP;
+	sortPreComputeProgram = sortPreComputeP;
 	sortComputeProgram = sortComputeP;
 	sortLocalComputeProgram = sortLocalComputeP;
 	sortLocalInnerComputeProgram = sortLocalInnerComputeP;
@@ -30,7 +31,7 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	texDepth2SamplerUniform = glGetUniformLocation(program, "texDepth2Sampler");
 	texDepth3SamplerUniform = glGetUniformLocation(program, "texDepth3Sampler");
 	dtUniform = glGetUniformLocation(simulateComputeProgram, "dt");
-	halfVectorUniform = glGetUniformLocation(simulateComputeProgram, "halfVector");
+	//halfVectorUniform = glGetUniformLocation(simulateComputeProgram, "halfVector");
 	maxParticlesUniform = glGetUniformLocation(simulateComputeProgram, "maxParticles");
 	//hGridSimulateUniform = glGetUniformLocation(simulateComputeProgram, "h");
 	//gridMaxIndexUniform = glGetUniformLocation(simulateComputeProgram, "gridMaxIndex");
@@ -40,6 +41,8 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint simulateComput
 	gravitySimulateUniform = glGetUniformLocation(simulateComputeProgram, "gravity");
 	timeSimulateUniform = glGetUniformLocation(simulateComputeProgram, "time");
 	maxEmitUniform = glGetUniformLocation(emitComputeProgram, "maxEmit");
+	halfVectorUniform = glGetUniformLocation(sortPreComputeProgram, "halfVector");
+	maxParticlesSortPreUniform = glGetUniformLocation(sortPreComputeProgram, "maxParticles");
 	maxSortUniform = glGetUniformLocation(sortComputeProgram, "numParticles");
 	compareDistUniform = glGetUniformLocation(sortComputeProgram, "compareDist");
 	subArraySizeUniform = glGetUniformLocation(sortComputeProgram, "subArraySize");
@@ -188,11 +191,8 @@ void ParticleTechnique::simulate()
 	if (fdt > 0.01f)
 		fdt = 0.01f;
 	time += fdt;
-	//nulovani sort counteru - kazdy snimek se vytvari znova, proto ze hodi pozice na zacatek
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
-	unsigned data[4] = { 0, 0, 0, 0 };
-	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(unsigned)* 4, data);
 
+	unsigned data[4] = { 0, 0, 0, 0 };
 	//nulovani grid counteru - kazdy snimek se vytvari znova, proto ze hodi pozice na zacatek
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[7]);
 	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(unsigned)* 4, data);
@@ -240,7 +240,7 @@ void ParticleTechnique::simulate()
 	//precteni pozice v grid counteru, aby se vedelo kolik castic je ve mrizce
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[7]);
 	GLuint *ptr = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT);
-	GLuint gridCounter = ptr[0];
+	gridCounter = ptr[0];
 	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
 
 	//serazeni gridListu podle indexu do mrizky
@@ -295,32 +295,44 @@ void ParticleTechnique::simulate()
 	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-	//hleda castice s nezapornym casem zivota, ty odsimuluje a da je do sort bufferu
+	//hleda castice s nezapornym casem zivota, ty odsimuluje
 	glUseProgram(simulateComputeProgram);
 	glUniform1f(dtUniform, fdt);
-	glUniform3f(halfVectorUniform, halfVector.x, halfVector.y, halfVector.z);
 	glUniform1ui(maxParticlesUniform, (unsigned int)gridCounter);
-	glUniform1f(hGridSimulateUniform, static_cast<float>(GRID_H));
-	glUniform1ui(gridMaxIndexUniform, (unsigned int)pow((GRID_SIZE / GRID_H), 3));
-	glUniform1ui(gridSizeSimulateUniform, (unsigned int)(GRID_SIZE / GRID_H));
 	glUniform1f(buoyancySimulateUniform, BUOYANCY);
 	glUniform1f(restDensitySimulateUniform, static_cast<float>(REST_DENSITY));
 	glUniform1f(gravitySimulateUniform, static_cast<float>(GRAVITY));
 	glUniform1f(timeSimulateUniform, time);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
-	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 3, vbo[3]);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, vbo[6]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, vbo[8]);
+	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
+}
+
+void ParticleTechnique::sortParticles()
+{
+	//nulovani sort counteru - kazdy snimek se vytvari znova, proto se hodi pozice na zacatek
+	unsigned data[4] = { 0, 0, 0, 0 };
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
+	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(unsigned)* 4, data);
+
+	//naplneni bufery pro razeni klici
+	glUseProgram(sortPreComputeProgram);
+	glUniform3f(halfVectorUniform, halfVector.x, halfVector.y, halfVector.z);
+	glUniform1ui(maxParticlesSortPreUniform, (unsigned int)gridCounter);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vbo[1]);
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 3, vbo[3]);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, vbo[5]);
 	glDispatchCompute(static_cast<GLuint>(ceil(gridCounter / 256.0)), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	//precteni pozice v sort counteru, aby se vedelo kolik castic se bude vykreslovat
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, vbo[3]);
-	ptr = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT);
+	GLuint *ptr = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), GL_MAP_READ_BIT);
 	sortCounter = ptr[0];
 	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
 

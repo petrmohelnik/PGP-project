@@ -142,5 +142,8 @@
     <None Include="resource\simulate_particle_force.comp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resource\sort_pre_particle.comp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

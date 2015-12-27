@@ -230,7 +230,8 @@ void MainScene::render(Uint32 dt)
 	glViewport(0, 0, static_cast<GLsizei>(camera.getSize().x), static_cast<GLsizei>(camera.getSize().y));
 	const glm::mat4 mvpDepth2 = camera.getProjection() * camera.getView();
 
-	particleSystem->simulate(camera, lights, dt / 2);
+	particleSystem->simulate(dt);
+	particleSystem->sort(camera, lights);
 	particleSystem->render(camera, lights, ambientLight, mvpDepth, mvpDepth2, 0, 0, 0, dt, Renderer::DRAW_SHADOW);
 
 	camera = camOld;
@@ -238,7 +239,7 @@ void MainScene::render(Uint32 dt)
 	glDisable(GL_POLYGON_OFFSET_FILL);
 	glViewport(0, 0, static_cast<GLsizei>(camera.getSize().x), static_cast<GLsizei>(camera.getSize().y));
 
-	particleSystem->simulate(camera, lights, dt / 2); //dal sem casticovej system zvlast a simulaci sem vytahl z draw a dal do samostatne metody
+	particleSystem->sort(camera, lights);
 
 	for(unsigned int i = 0; i < objects.size(); i++)
 		objects[i]->render(camera, lights, ambientLight, mvpDepth, mvpDepth2, textureDepth, textureDepthParticle, textureDepthParticleAccum, dt, Renderer::DRAW_STANDARD);

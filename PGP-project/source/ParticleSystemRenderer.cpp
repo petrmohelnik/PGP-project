@@ -6,8 +6,8 @@ ParticleSystemRenderer::ParticleSystemRenderer(const glm::vec3 &position)
 	technique.reset(new ParticleTechnique);
 }
 
-bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP,
-	GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
+bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP,
+	GLuint sortComputeP, GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 	GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP)
 {
 	if (m.getMeshesSize() < 1) {
@@ -15,7 +15,7 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 		return false;
 	}
 
-	technique->init(*(m.getMeshes()[0]), count, p, simulateComputeP, emitComputeP, sortComputeP, sortLocalComputeP, 
+	technique->init(*(m.getMeshes()[0]), count, p, simulateComputeP, emitComputeP, sortPreComputeP, sortComputeP, sortLocalComputeP,
 		sortLocalInnerComputeP, gridDivideComputeP, gridFindStartComputeP,
 		simulateDensityComputeP, simulatePressureComputeP, simulateForceComputeP);
 	return true;
@@ -46,10 +46,15 @@ void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &light
 	technique->draw();
 }
 
-void ParticleSystemRenderer::simulate(Camera &cam, const std::vector<Light> &lights, int dt)
+void ParticleSystemRenderer::simulate(int dt)
 {
 	technique->setDt(dt);
 
+	technique->simulate();
+}
+
+void ParticleSystemRenderer::sort(Camera &cam, const std::vector<Light> &lights)
+{
 	glm::vec3 halfVector;
 	bool flipped;
 
@@ -64,6 +69,6 @@ void ParticleSystemRenderer::simulate(Camera &cam, const std::vector<Light> &lig
 	halfVector = -cam.getDir();
 
 	technique->setHalfVector(halfVector, flipped);
-	technique->simulate();
+	technique->sortParticles();
 }
 

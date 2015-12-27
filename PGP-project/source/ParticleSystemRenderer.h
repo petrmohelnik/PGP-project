@@ -15,11 +15,12 @@ private:
 	glm::vec3 pos;
 public:
 	ParticleSystemRenderer(const glm::vec3 &position);
-	bool initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortComputeP,
+	bool initRenderer(Model &m, int count, GLuint p, GLuint simulateComputeP, GLuint emitComputeP, GLuint sortPreComputeP, GLuint sortComputeP,
 		GLuint sortLocalComputeP, GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 		GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
 	void render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, const glm::mat4 &mvpDepth2, GLuint texDepth, GLuint texDepth2, GLuint texDepth3, int dt, DrawType drawType);
-	void simulate(Camera &cam, const std::vector<Light> &lights, int dt);
+	void simulate(int dt);
+	void sort(Camera &cam, const std::vector<Light> &lights);
 };
 
 #endif //PARTICLE_SYSTEM_RENDERER_H
