@@ -139,8 +139,8 @@ int main(int argc, char **argv)
 	if (!s.compileShader(strEmitPCs.c_str(), GL_COMPUTE_SHADER, "emit_particle_compute", EmitPCs)) { cin.get(); return -1; }
 	if (!s.linkProgram(EmitPCs, "emit_particle_compute_program")) { cin.get(); return -1; }
 
-	if (!s.compileShader(strSortPrePCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_pre_compute", SortPrePCs)) { cin.get(); return -1; }
-	if (!s.linkProgram(SortPrePCs, "sort_particle_pre_compute_program")) { cin.get(); return -1; }
+	if (!s.compileShader(strSortPrePCs.c_str(), GL_COMPUTE_SHADER, "sort_pre_particle_compute", SortPrePCs)) { cin.get(); return -1; }
+	if (!s.linkProgram(SortPrePCs, "sort_pre_particle_compute_program")) { cin.get(); return -1; }
 
 	if (!s.compileShader(strSortPCs.c_str(), GL_COMPUTE_SHADER, "sort_particle_compute", SortPCs)) { cin.get(); return -1; }
 	if (!s.linkProgram(SortPCs, "sort_particle_compute_program")) { cin.get(); return -1; }
