@@ -16,7 +16,7 @@ out vec4 glFragColor;
 void main()
 {
 	float depthVis = textureProj(texDepthSampler, f_depthPos).r;// texture(texDepthSampler, f_depthPos.xyz / f_depthPos.w).r;
-	float depth2Vis = clamp(1.0 - clamp((((f_depth2Pos.z) / f_depth2Pos.w) - textureProj(texDepth2Sampler, f_depth2Pos.xyw).r) * 10000.0, 0.0, 1.0) +
+	float depth2Vis = clamp(1.0 - clamp((((f_depth2Pos.z) / f_depth2Pos.w) - textureProj(texDepth2Sampler, f_depth2Pos.xyw).r) * 20000.0, 0.0, 1.0) +
 		1.0 - textureProj(texDepth3Sampler, f_depth2Pos).r * 10.0, 0.0, 1.0);
 
 	vec3 ambientReflection = ambientLight;

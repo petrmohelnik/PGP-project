@@ -15,6 +15,8 @@
 #define FBO_SHADOW_HEIGHT 2048
 #define FBO_SHADOW_PARTICLE_WIDTH 2048
 #define FBO_SHADOW_PARTICLE_HEIGHT 2048
+#define FBO_SHAFTS_WIDTH 512
+#define FBO_SHAFTS_HEIGHT 512
 
 class Scene
 {
@@ -42,25 +44,40 @@ class MainScene : public Scene
 {
 private:
 	int cameraMode;
-  GLuint fboDepth;
-  GLuint fboDepthParticle;
-  //GLuint rboDepth;
-  GLuint textureDepth;
-  GLuint textureDepthParticle;
-  GLuint textureDepthParticleAccum;
-  std::shared_ptr<ParticleSystemRenderer> particleSystem;
+	GLuint fboDepth;
+	GLuint fboDepthParticle;
+	GLuint fboShafts;
+	GLuint fboShaftsOut;
+	//GLuint rboDepth;
+	GLuint textureDepth;
+	GLuint textureDepthParticle;
+	GLuint textureDepthParticleAccum;
+	GLuint textureShafts;
+	GLuint textureShaftsOut;
+
+	GLuint pShafts;
+	GLuint pShaftsOut;
+	GLuint fsQuadVao;
+	GLuint fsQuadVbo;
+	GLuint fsQuadAttrib;
+	GLuint fsQuadSamplerShafts;
+	GLuint sunPosUniformShafts;
+	GLuint fsQuadSamplerShaftsOut;
+
+	std::shared_ptr<ParticleSystemRenderer> particleSystem;
 
 	void onKeyDown(SDL_Keycode key);
 	void onMouseMove(Sint32 x, Sint32 y, Sint32 xrel, Sint32 yrel, Uint32 state);
 	void onMouseWheel(Sint32 x, Sint32 y);
 
 public:
-  MainScene();
+	MainScene();
 	void handleSdlEvent(SDL_Event &event);
 	void setCameraMode(int mode);
 	void initCamera(float fov, int width, int height, float nearPlane, float farPlane, int mode = CAM_ROT_TRANS);
 	void render(Uint32 dt);
 	void addParticleSystem(std::shared_ptr<ParticleSystemRenderer> o);
+	void setShaftPrograms(GLuint s, GLuint sOut);
 };
 
 #endif //SCENE_H

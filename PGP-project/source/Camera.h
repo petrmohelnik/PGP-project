@@ -43,6 +43,7 @@ public:
 	glm::vec2 getRotation() const;
 	glm::vec2 getSize() const;
 	void setMode(int mode);
+	void setRange(float n, float f);
 };
 
 #endif //CAMERA_H

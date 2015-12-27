@@ -106,3 +106,9 @@ void Camera::setMode(int m)
 {
 	mode = m;
 }
+
+void Camera::setRange(float n, float f)
+{
+	nearPlane = n;
+	farPlane = f;
+}

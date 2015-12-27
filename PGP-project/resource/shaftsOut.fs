@@ -2,9 +2,10 @@
 
 uniform sampler2D texDifSampler;
 
+in vec2 f_texCoord;
 out vec4 glFragColor;
 
 void main()
 {
-	glFragColor = vec4(texture(texDifSampler, gl_FragCoord.xy).rgb, 1.0);
+	glFragColor = texture(texDifSampler, f_texCoord);
 }

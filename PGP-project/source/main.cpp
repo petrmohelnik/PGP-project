@@ -57,10 +57,9 @@ int main(int argc, char **argv)
 	Application app;
 	FileSystem f;
 	Shader s;
-
 	string strVs, strFs, strPVs, strPGs, strPFs,
 		strShaftsColorVs, strShaftsColorFs, strShaftsColorParVs, strShaftsColorParGs, strShaftsColorParFs,
-		strShaftsBlurVs, strShaftsBlurGs, strShaftsBlurFs, strShaftsOutVs, strShaftsOutGs, strShaftsOutFs,
+		strShaftsBlurVs, strShaftsBlurFs, strShaftsOutVs, strShaftsOutFs,
 		strEmitPCs, strSortPrePCs, strSortPCs, strSortLocalPCs,
 		strSortLocalInnerPCs, strSimulatePCs, strGridDividePCs, strGridFindStartPCs,
 		strSimulateDensityPCs, strSimulatePressurePCs, strSimulateForcePCs;
@@ -75,10 +74,8 @@ int main(int argc, char **argv)
 	if (!f.loadFile("resource/shaftsColorParticle.gs", strShaftsColorParGs)) { cin.get(); return -1; }
 	if (!f.loadFile("resource/shaftsColorParticle.fs", strShaftsColorParFs)) { cin.get(); return -1; }
 	if (!f.loadFile("resource/shaftsBlur.vs", strShaftsBlurVs)) { cin.get(); return -1; }
-	if (!f.loadFile("resource/shaftsBlur.gs", strShaftsBlurGs)) { cin.get(); return -1; }
 	if (!f.loadFile("resource/shaftsBlur.fs", strShaftsBlurFs)) { cin.get(); return -1; }
 	if (!f.loadFile("resource/shaftsOut.vs", strShaftsOutVs)) { cin.get(); return -1; }
-	if (!f.loadFile("resource/shaftsOut.gs", strShaftsOutGs)) { cin.get(); return -1; }
 	if (!f.loadFile("resource/shaftsOut.fs", strShaftsOutFs)) { cin.get(); return -1; }
 	if (!f.loadFile("resource/simulate_particle.comp", strSimulatePCs)) { cin.get(); return -1; }
 	if (!f.loadFile("resource/simulate_particle_density.comp", strSimulateDensityPCs)) { cin.get(); return -1; }
@@ -94,7 +91,7 @@ int main(int argc, char **argv)
 
 	GLuint vs, fs, Pvs, Pgs, Pfs, SimulatePCs, EmitPCs, SortPrePCs, SortPCs, SortLocalPCs, SortLocalInnerPCs,
 		ShaftsColorPVs, ShaftsColorPFs, ShaftsColorParPVs, ShaftsColorParPGs, ShaftsColorParPFs,
-		ShaftsBlurPVs, ShaftsBlurPGs, ShaftsBlurPFs, ShaftsOutPVs, ShaftsOutPGs, ShaftsOutPFs,
+		ShaftsBlurPVs, ShaftsBlurPFs, ShaftsOutPVs, ShaftsOutPFs,
 		GridDividePCs, GridParticleStartPCs, SimulateDensityPCs, SimulatePressurePCs, SimulateForcePCs;
 	if (!s.compileShader(strVs.c_str(), GL_VERTEX_SHADER, "basic_vs", vs)) { cin.get(); return -1; }
 	if (!s.compileShader(strFs.c_str(), GL_FRAGMENT_SHADER, "basic_fs", fs)) { cin.get(); return -1; }
@@ -115,14 +112,12 @@ int main(int argc, char **argv)
 	if (!s.linkProgram(ShaftsColorParPVs, ShaftsColorParPGs, ShaftsColorParPFs, "shafts_color_particle_program")) { cin.get(); return -1; }
 
 	if (!s.compileShader(strShaftsBlurVs.c_str(), GL_VERTEX_SHADER, "shafts_blur_vs", ShaftsBlurPVs)) { cin.get(); return -1; }
-	if (!s.compileShader(strShaftsBlurGs.c_str(), GL_GEOMETRY_SHADER, "shafts_blur_gs", ShaftsBlurPGs)) { cin.get(); return -1; }
 	if (!s.compileShader(strShaftsBlurFs.c_str(), GL_FRAGMENT_SHADER, "shafts_blur_fs", ShaftsBlurPFs)) { cin.get(); return -1; }
-	if (!s.linkProgram(ShaftsBlurPVs, ShaftsBlurPGs, ShaftsBlurPFs, "shafts_blur_program")) { cin.get(); return -1; }
+	if (!s.linkProgram(ShaftsBlurPVs, ShaftsBlurPFs, "shafts_blur_program")) { cin.get(); return -1; }
 
 	if (!s.compileShader(strShaftsOutVs.c_str(), GL_VERTEX_SHADER, "shafts_out_vs", ShaftsOutPVs)) { cin.get(); return -1; }
-	if (!s.compileShader(strShaftsOutGs.c_str(), GL_GEOMETRY_SHADER, "shafts_out_gs", ShaftsOutPGs)) { cin.get(); return -1; }
 	if (!s.compileShader(strShaftsOutFs.c_str(), GL_FRAGMENT_SHADER, "shafts_out_fs", ShaftsOutPFs)) { cin.get(); return -1; }
-	if (!s.linkProgram(ShaftsOutPVs, ShaftsOutPGs, ShaftsOutPFs, "shafts_out_program")) { cin.get(); return -1; }
+	if (!s.linkProgram(ShaftsOutPVs, ShaftsOutPFs, "shafts_out_program")) { cin.get(); return -1; }
 
 	if (!s.compileShader(strSimulatePCs.c_str(), GL_COMPUTE_SHADER, "simulate_particle_compute", SimulatePCs)) { cin.get(); return -1; }
 	if (!s.linkProgram(SimulatePCs, "simulate_particle_compute_program")) { cin.get(); return -1; }
@@ -179,11 +174,7 @@ int main(int argc, char **argv)
 	planeMesh->addMaterial(matGrid);
 	modelPlane.addMesh(planeMesh);
 	std::shared_ptr<BasicRenderer> planeRenderer(new BasicRenderer(glm::vec3(0.0f, 0.0f, 0.0f)));
-	if(!planeRenderer->initRenderer(modelPlane, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program")))
-	{
-		cin.get();
-		return -1;
-	}
+	if(!planeRenderer->initRenderer(modelPlane, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program"))) { cin.get(); return -1; }
 
 	Model modelSphere;
 	const unsigned int spheresCount = 6;
@@ -204,25 +195,17 @@ int main(int argc, char **argv)
 	for(int i = 0; i < spheresCount; i++)
 	{
 		sphereRenderer[i] = std::make_shared<BasicRenderer>(spherePos[i]);
-		if(!sphereRenderer[i]->initRenderer(modelSphere, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program")))
-		{
-			cin.get();
-			return -1;
-		}
+		if(!sphereRenderer[i]->initRenderer(modelSphere, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program"))) { cin.get(); return -1; }
 	}
 
 	Model modelSphereSun;
 	std::shared_ptr<Mesh> sphereMeshSun(new Mesh);
-	sphereMeshSun->createSphere(2.0f, 108);
+	sphereMeshSun->createSphere(20.0f, 108);
 	sphereMeshSun->addMaterial(matSun);
 	modelSphereSun.addMesh(sphereMeshSun);
 	std::shared_ptr<BasicRenderer> sphereSunRenderer;
-	sphereSunRenderer = std::make_shared<BasicRenderer>(glm::vec3(15.0f, 21.0f, 15.0f));
-	if(!sphereSunRenderer->initRenderer(modelSphereSun, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program")))
-	{
-		cin.get();
-		return -1;
-	}
+	sphereSunRenderer = std::make_shared<BasicRenderer>(glm::vec3(150.0f, 210.0f, 150.0f));
+	if(!sphereSunRenderer->initRenderer(modelSphereSun, s.getProgram("basic_program"), s.getProgram("shafts_color_basic_program"))) { cin.get(); return -1; }
 
 	Model particles;
 	std::shared_ptr<Mesh> particlesMesh(new Mesh);
@@ -248,12 +231,13 @@ int main(int argc, char **argv)
 
 	std::shared_ptr<MainScene> scene(new MainScene);
 	scene->setName("mainScene");
+	scene->addObject(sphereSunRenderer);
 	for(int i = 0; i < spheresCount; i++)
 		scene->addObject(sphereRenderer[i]);
-	scene->addObject(sphereSunRenderer);
 	scene->addObject(planeRenderer);
 	scene->addParticleSystem(ParticleSystemRenderer);
-	scene->initCamera(45.0f, W_WIDTH, W_HEIGHT, 0.1f, 100.0f, CAM_TRANS_ROT);
+	scene->setShaftPrograms(s.getProgram("shafts_blur_program"), s.getProgram("shafts_out_program"));
+	scene->initCamera(45.0f, W_WIDTH, W_HEIGHT, 0.1f, 1000.0f, CAM_TRANS_ROT);
 	scene->getCamera()->translate(glm::vec3(0.0f, 1.5f, 2.0f));
 	Light light(glm::vec3(10.0, 10.0, 10.0), glm::normalize(glm::vec3(0) - glm::vec3(10.0, 10.0, 10.0)));
 	scene->addLight(light);
