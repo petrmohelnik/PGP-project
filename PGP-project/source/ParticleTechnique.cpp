@@ -205,8 +205,8 @@ void ParticleTechnique::simulate()
 {
 	counter++;
 	float fdt = static_cast<float>(dt) * 0.001f;
-	if (fdt > 0.01f)
-		fdt = 0.01f;
+	if (fdt > 0.005f)
+		fdt = 0.005f;
 	time += fdt;
 
 	unsigned data[4] = { 0, 0, 0, 0 };
@@ -225,13 +225,14 @@ void ParticleTechnique::simulate()
 		glDispatchCompute(ceil((10000) / 256.0), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 	}*/
-	if (counter % 30 == 0 && counter <= 160000) {
+	if (time - prevTime > 0.2) {
+		prevTime = time;
 		glUseProgram(emitComputeProgram);
-		glUniform1ui(maxEmitUniform, (unsigned int)(100));
+		glUniform1ui(maxEmitUniform, (unsigned int)(200));
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vbo[2]);
 		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, vbo[4]);
-		glDispatchCompute(static_cast<GLuint>(ceil((100) / 256.0)), 1, 1);
+		glDispatchCompute(static_cast<GLuint>(ceil((200) / 256.0)), 1, 1);
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 	}
 

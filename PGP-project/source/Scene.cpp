@@ -201,7 +201,7 @@ void MainScene::onMouseMove(Sint32 x, Sint32 y, Sint32 xrel, Sint32 yrel, Uint32
 
 void MainScene::onMouseWheel(Sint32 x, Sint32 y)
 {
-	camera.translate(glm::vec3(0.0, 0.0, -y));
+	camera.translate(glm::vec3(0.0, 0.0, -y * 0.25));
 }
 
 void MainScene::setCameraMode(int mode)
@@ -322,7 +322,7 @@ void MainScene::render(Uint32 dt)
 	glm::vec4 sunScreen = glm::vec4(camera.getProjection() * camera.getView() * glm::vec4(sunPos, 1.0f)) * glm::vec4(0.5f, 0.5f, 0.5f, 1.0f) + glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	//const float dist = 1.0f / glm::distance(sunPos, camera.getPos());
 	sunScreen = glm::vec4((glm::vec3(sunScreen) / sunScreen.w) + glm::vec3(0.5f, 0.5f, 0.5f), 1.0);
-	sunScreen.z = glm::dot(glm::normalize(glm::vec3(glm::vec3(glm::vec4(camera.getView() * glm::vec4(0.0, 0.0, -1.0, 1.0))) - camera.getPos())), glm::normalize(sunPos));
+	sunScreen.z = glm::dot(-camera.getDir(), glm::normalize(sunPos));
 	glUniform3f(sunPosUniformShafts, sunScreen.x/* - dist*/, sunScreen.y/* - dist*/, -sunScreen.z);
 	//std::cout << sunScreen.x << " " << sunScreen.y << " " << -sunScreen.z << " " << sunScreen.w << "\n";
 

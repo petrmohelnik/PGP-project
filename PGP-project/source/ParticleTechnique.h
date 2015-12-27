@@ -1,7 +1,7 @@
 #ifndef PARTICLE_TECHNIQUE_H
 #define PARTICLE_TECHNIQUE_H
 
-#define GRID_SIZE 4.0
+#define GRID_SIZE 3.0
 #define GRID_H 0.06
 #define MASS 0.00005
 #define GAS_CONSTANT 4.0
@@ -141,6 +141,7 @@ protected:
 	GLuint gridCounter;
 	int counter = 0;
 	float time = 0;
+	float prevTime = 0;
 	Mesh *mesh;
 
 public:
