@@ -425,6 +425,7 @@ void ParticleTechnique::bindTexDepth(int t, int t2, int t3)
 	texDepthSampler = t;
 	glActiveTexture(GL_TEXTURE0 + t2);
 	glBindTexture(GL_TEXTURE_2D, texDepth2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	texDepth2Sampler = t2;
 	glActiveTexture(GL_TEXTURE0 + t3);
 	glBindTexture(GL_TEXTURE_2D, texDepth3);

@@ -48,7 +48,7 @@ void Scene::handleSdlEvent(SDL_Event &event)
 
 }
 
-GLuint Scene::createFboMap(Uint32 w, Uint32 h, bool depth)
+GLuint Scene::createFboMap(Uint32 w, Uint32 h, bool depth, bool cmp)
 {
 	GLuint tex;
 	glGenTextures(1, &tex);
@@ -61,7 +61,7 @@ GLuint Scene::createFboMap(Uint32 w, Uint32 h, bool depth)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	if(depth)
+	if(cmp)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
@@ -73,9 +73,9 @@ GLuint Scene::createFboMap(Uint32 w, Uint32 h, bool depth)
 
 MainScene::MainScene()
 {
-	textureDepth = createFboMap(FBO_SHADOW_WIDTH, FBO_SHADOW_HEIGHT, true);
-	textureDepthParticle = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, true);
-	textureDepthParticleAccum = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, false);
+	textureDepth = createFboMap(FBO_SHADOW_WIDTH, FBO_SHADOW_HEIGHT, true, true);
+	textureDepthParticle = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, true, false);
+	textureDepthParticleAccum = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, false, false);
 
 	/*glGenRenderbuffers(1, &rboDepth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
@@ -224,6 +224,7 @@ void MainScene::render(Uint32 dt)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fboDepthParticle);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glPolygonOffset(1.0f, 1.0f);
 
 	camera.resize(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT);
 	glViewport(0, 0, static_cast<GLsizei>(camera.getSize().x), static_cast<GLsizei>(camera.getSize().y));
@@ -277,7 +278,7 @@ void MainScene::render(Uint32 dt)
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 		glBindTexture(GL_TEXTURE_2D, textureDepthParticle);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
 		glBegin(GL_QUADS);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -291,7 +292,7 @@ void MainScene::render(Uint32 dt)
 		glVertex3f(-1.0f, 1.0f - 2.0f * fboH, 1.0f);
 		glEnd();
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 		glBindTexture(GL_TEXTURE_2D, textureDepthParticleAccum);
 
 		glBegin(GL_QUADS);

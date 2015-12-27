@@ -32,7 +32,12 @@ void main()
 	vec3 diffuseReflection = lightColor * max(0.0, dot(normal, lightDir));
 
 	float depthVis = textureProj(texDepthSampler, f_depthPos).r;// texture(texDepthSampler, f_depthPos.xyz / f_depthPos.w).r;
-	float depth2Vis = 1.0 - textureProj(texDepth3Sampler, f_depth2Pos).r * 10.0;
+	float depth2Vis = textureProj(texDepth2Sampler, f_depth2Pos).r; // kombinace zastínìní
+	if(depth2Vis < 1.0)
+	{
+		depth2Vis += clamp(1.0 - textureProj(texDepth3Sampler, f_depth2Pos).r * 10.0, 0.0, 1.0);
+		depth2Vis = clamp(depth2Vis, 0.0, 1.0);
+	}
 
 	vec3 specularReflection;
 	if ((dot(normal, lightDir) < 0.0) || (depthVis == 0.0)) // light source on the wrong side?

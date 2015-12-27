@@ -131,6 +131,8 @@ void BasicTechnique::bindTexDepth(int t, int t2, int t3)
 	texDepthSampler = t;
 	glActiveTexture(GL_TEXTURE0 + t2);
 	glBindTexture(GL_TEXTURE_2D, texDepth2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	texDepth2Sampler = t2;
 	glActiveTexture(GL_TEXTURE0 + t3);
 	glBindTexture(GL_TEXTURE_2D, texDepth3);

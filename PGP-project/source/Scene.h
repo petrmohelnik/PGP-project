@@ -34,7 +34,7 @@ public:
 	const char* getName();
 	virtual void handleSdlEvent(SDL_Event &event);
 
-	static GLuint createFboMap(Uint32 w, Uint32 h, bool depth);
+	static GLuint createFboMap(Uint32 w, Uint32 h, bool depth, bool cmp);
 };
 
 class MainScene : public Scene
