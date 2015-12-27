@@ -21,7 +21,7 @@ void main()
 		c += texture(texDifSampler, tc).rgb * 0.02;
 	}
 
-	glFragColor = vec4(c, (lightPos.z - 0.5) * 2.0);
+	glFragColor = vec4(c, lightPos.z);
 
 	// debug flek
 	/*if(distance(f_texCoord, lightPos.xy) < 0.005)

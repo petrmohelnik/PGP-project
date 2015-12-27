@@ -45,7 +45,6 @@ const char* Scene::getName()
 
 void Scene::handleSdlEvent(SDL_Event &event)
 {
-
 }
 
 GLuint Scene::createFboMap(Uint32 w, Uint32 h, bool depth, bool cmp)
@@ -73,6 +72,8 @@ GLuint Scene::createFboMap(Uint32 w, Uint32 h, bool depth, bool cmp)
 
 MainScene::MainScene()
 {
+	skyMultiplier = 1.0f;
+
 	textureDepth = createFboMap(FBO_SHADOW_WIDTH, FBO_SHADOW_HEIGHT, true, true);
 	textureDepthParticle = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, true, false);
 	textureDepthParticleAccum = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, false, false);
@@ -143,8 +144,8 @@ void MainScene::handleSdlEvent(SDL_Event &event)
 	switch (event.type)
 	{
 	case SDL_KEYDOWN:
-		if (cameraMode == CAM_TRANS_ROT)
-			break;
+		/*if (cameraMode == CAM_TRANS_ROT)
+			break;*/
 		onKeyDown(event.key.keysym.sym);
 		break;
 	case SDL_MOUSEMOTION:
@@ -166,28 +167,40 @@ void MainScene::handleSdlEvent(SDL_Event &event)
 
 void MainScene::onKeyDown(SDL_Keycode key)
 {
-	glm::vec3 dir;
+	if (cameraMode != CAM_TRANS_ROT) {
+		glm::vec3 dir;
+		switch (key) {
+			case SDLK_UP:
+				dir = glm::normalize(glm::rotate(glm::vec3(0.0f, 0.0f, 1.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
+				dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
+				camera.translate(glm::vec3(dir.x, dir.y, -dir.z));
+				break;
+			case SDLK_DOWN:
+				dir = glm::normalize(glm::rotate(glm::vec3(0.0f, 0.0f, -1.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
+				dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
+				camera.translate(glm::vec3(dir.x, dir.y, -dir.z));
+				break;
+			case SDLK_LEFT:
+				dir = glm::normalize(glm::rotate(glm::vec3(1.0f, 0.0f, 0.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
+				dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
+				camera.translate(glm::vec3(-dir.x, dir.y, dir.z));
+				break;
+			case SDLK_RIGHT:
+				dir = glm::normalize(glm::rotate(glm::vec3(-1.0f, 0.0f, 0.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
+				dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
+				camera.translate(glm::vec3(-dir.x, dir.y, dir.z));
+				break;
+		}
+	}
 	switch (key) {
-	case SDLK_UP:
-		dir = glm::normalize(glm::rotate(glm::vec3(0.0f, 0.0f, 1.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
-		dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
-		camera.translate(glm::vec3(dir.x, dir.y, -dir.z));
-		break;
-	case SDLK_DOWN:
-		dir = glm::normalize(glm::rotate(glm::vec3(0.0f, 0.0f, -1.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
-		dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
-		camera.translate(glm::vec3(dir.x, dir.y, -dir.z));
-		break;
-	case SDLK_LEFT:
-		dir = glm::normalize(glm::rotate(glm::vec3(1.0f, 0.0f, 0.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
-		dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
-		camera.translate(glm::vec3(-dir.x, dir.y, dir.z));
-		break;
-	case SDLK_RIGHT:
-		dir = glm::normalize(glm::rotate(glm::vec3(-1.0f, 0.0f, 0.0f), camera.getRotation().y, glm::vec3(1.0f, 0.0f, 0.0f)));
-		dir = glm::normalize(glm::rotate(dir, camera.getRotation().x, glm::vec3(0.0f, 1.0f, 0.0f)));
-		camera.translate(glm::vec3(-dir.x, dir.y, dir.z));
-		break;
+		case SDLK_1:
+			skyMultiplier -= 0.1f;
+			if (skyMultiplier < 0.0f)
+				skyMultiplier = 0.0f;
+			break;
+		case SDLK_2:
+			skyMultiplier += 0.1f;
+			break;
 	}
 }
 
@@ -201,7 +214,7 @@ void MainScene::onMouseMove(Sint32 x, Sint32 y, Sint32 xrel, Sint32 yrel, Uint32
 
 void MainScene::onMouseWheel(Sint32 x, Sint32 y)
 {
-	camera.translate(glm::vec3(0.0, 0.0, -y * 0.25));
+	camera.translate(glm::vec3(0.0, 0.0, -y));
 }
 
 void MainScene::setCameraMode(int mode)
@@ -294,7 +307,7 @@ void MainScene::render(Uint32 dt)
 	// shadts
 	camera = camOld;
 	glBindFramebuffer(GL_FRAMEBUFFER, fboShafts);
-	glClearColor(0.2f, 0.4f, 0.5f, 1.0f);
+	glClearColor(0.3f * skyMultiplier, 0.4f * skyMultiplier, 0.45f * skyMultiplier, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_POLYGON_OFFSET_FILL);
@@ -320,10 +333,9 @@ void MainScene::render(Uint32 dt)
 
 	const glm::vec3 sunPos(150.0f, 210.0f, 150.0f);
 	glm::vec4 sunScreen = glm::vec4(camera.getProjection() * camera.getView() * glm::vec4(sunPos, 1.0f)) * glm::vec4(0.5f, 0.5f, 0.5f, 1.0f) + glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	//const float dist = 1.0f / glm::distance(sunPos, camera.getPos());
 	sunScreen = glm::vec4((glm::vec3(sunScreen) / sunScreen.w) + glm::vec3(0.5f, 0.5f, 0.5f), 1.0);
 	sunScreen.z = glm::dot(-camera.getDir(), glm::normalize(sunPos));
-	glUniform3f(sunPosUniformShafts, sunScreen.x/* - dist*/, sunScreen.y/* - dist*/, -sunScreen.z);
+	glUniform3f(sunPosUniformShafts, sunScreen.x, sunScreen.y, -sunScreen.z);
 	//std::cout << sunScreen.x << " " << sunScreen.y << " " << -sunScreen.z << " " << sunScreen.w << "\n";
 
 	glBindVertexArray(fsQuadVao);

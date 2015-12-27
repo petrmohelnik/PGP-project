@@ -44,6 +44,8 @@ class MainScene : public Scene
 {
 private:
 	int cameraMode;
+	float skyMultiplier;
+
 	GLuint fboDepth;
 	GLuint fboDepthParticle;
 	GLuint fboShafts;
