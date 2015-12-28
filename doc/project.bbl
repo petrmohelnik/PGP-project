@@ -1,0 +1,21 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{CMB{\etalchar{+}}08}
+
+\bibitem[CMB{\etalchar{+}}08]{Cox2008}
+Ingemar Cox, Matthew Miller, Jeffrey Bloom, Jessica Fridrich, and Ton Kalker.
+\newblock {\em Digital Watermarking and Steganography}.
+\newblock Morgan Kaufmann Publishers, 2nd edition, 2008.
+
+\bibitem[Wik04]{wikipedia}
+Wikipedia.
+\newblock Plagiarism --- {W}ikipedia{,} the free encyclopedia, 2004.
+\newblock [Online; accessed 22-July-2004].
+
+\bibitem[ZHBJ06]{zemcik2006}
+Pavel Zem{\v c}{\' i}k, Adam Herout, V{\' i}t{\v e}zslav Beran, and Ji{\v r}{\'
+  i}Gran{\' a}t.
+\newblock Hardware accelerated image analysis in fpga.
+\newblock In {\em Proceedings of SCCG}, page~4. Comenius University in
+  Bratislava, 2006.
+
+\end{thebibliography}

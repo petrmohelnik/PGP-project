@@ -36,7 +36,7 @@
 
 \section{Úvod}
 
-Tato práce se zamìøuje na realistickou simulaci a zobrazení dýmu pomocí grafické karty.
+Tato práce se zamìøuje na realistickou simulaci a zobrazení dýmu pomocí grafické karty. Vyu¾ití by mìlo být v aplikacích pracujících v reálném èase, napø. hrách. V poèítaèových hrách mù¾e být dým vyu¾it u explozí, mlhy a ohnì apod.
 
 Tady by mìlo být napsané o èem práce je a k èemu to je dobré. Napøíklad: Tato práce se zabývá akcelerací
 raytracingu na CUDA. Raytracing se pou¾ívá ve fotorealistické grafice a herní grafice. CUDA umo¾òuje
@@ -45,6 +45,87 @@ akceleraci ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Teorie}
+Pøístupy pro simulaci kapalin a plynù se dají rozdìlit do dvou kategorií. Jeden je Eulerùv pøístup, kde je prostor rozdìlen na fixní 2D nebo 3D møí¾ku. Ka¾dá buòka v møí¾ce obsahuje informace o kapalinì nebo plynu na dané nemìnné pozici. Tyto informace mohou být tlak, hustota, teplota, viskozita aj. Oproti tomu Lagrangeùv pøístup vyu¾ívá èástice s promìnlivou pozicí jako nositele informace. Oproti Eulerovu pøístupu není vázán na fixní møí¾ku a mù¾e se libovolnì rozpínat v prostoru. Na druhou stranu mù¾e být výpoèetnì nároènìj¹í kvùli nutnosti vyhledávání okolních èástic. Tyto pøístupy se nìkdy kombinují.
+
+V tomto projektu jsme zvolily Lagrangeovu metodu zalo¾enou na Smoothed Particle Hydrodynamics (SPH), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. SPH je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv. 
+V SPH se fyzikální hodnota na pozici $\mathbf{r}$ urèí jako vá¾ená suma fyzikálních hodnot $\phi_j$ sousedních èástic $j$:
+\begin{equation}
+  \label{basic}
+  \phi(\mathbf{r}) = \sum_{j} m_j \frac{\phi_j}{\rho_j}W(\mathbf{r} - \mathbf{r}_j,h)
+\end{equation}
+kde $m_i$ je hmotnost èástice. Hmotnost je konstantní po celou dobu simulace a shodná pro v¹echny èástice a $W(\mathbf{r},h)$ je symetrická vyhlazovací funkce. Hustota $\rho_i$ se vypoèítá:
+\begin{equation}
+  \label{density}
+  \rho_i = \sum_{j} m_j W(\mathbf{r}_i - \mathbf{r}_j,h)
+\end{equation}
+kde $\mathbf{r}_i$ je pozice èástice $i$. Akcelerace $\mathbf{a}_i$ èástice $i$ se urèí následovnì:
+\begin{equation}
+  \label{acceleration}
+  \mathbf{a}_i = \frac{\mathbf{f}_i}{\rho_i}
+\end{equation}
+kde $\mathbf{f}_i$ se spoèítá jako $\mathbf{f}_i = \mathbf{f}_i^{viscosity} + \mathbf{f}_i^{pressure} + \mathbf{f}_i^{external}$.
+
+\vspace*{1\baselineskip}
+
+Tlaková síla $\mathbf{f}_i^{pressure}$ je ze vztahu \ref{basic} urèena:
+\begin{equation}
+  \label{pressure_1}
+  \mathbf{f}_i^{pressure} = \sum_{j} m_j \frac{p_j}{\rho_j} \nabla W(\mathbf{r}_i - \mathbf{r}_j,h)
+\end{equation}
+Bohu¾el tato síla není symetrická, jak mù¾e být vidìt pøi interakci pouze dvou èástic. Gradient je nula uprostøed, proto èástice $i$ vyu¾ívá pouze tlak èástice $j$ pro výpoèet síly a naopak. Tlak v lokacích dvou rùzných èástic není shodný. Tlaková síla je symetrizována následovnì (mohou být i jiné tvary rovnice pro symetrizaci):
+\begin{equation}
+  \label{pressure_2}
+  \mathbf{f}_i^{pressure} = \sum_{j} m_j \frac{p_i + p_j}{2\rho_j} \nabla W(\mathbf{r}_i - \mathbf{r}_j,h)
+\end{equation}
+Tlak $p_i$ se urèí pomocí modifikované rovnice ideálního plynu:
+\begin{equation}
+  \label{pressure_3}
+  p_i = k (\rho - \rho_0)
+\end{equation}
+kde $\rho_0$ je klidová hustota.
+
+\vspace*{1\baselineskip}
+
+Síla viskozity $\mathbf{f}_i^{viscosity}$ je z rovnice \ref{basic} urèena:
+\begin{equation}
+  \label{viscosity_1}
+  \mathbf{f}_i^{viscosity} = \mu \sum_{j} m_j \frac{\mathbf{v}_j}{\rho_j} \nabla^2 W(\mathbf{r}_i - \mathbf{r}_j,h)
+\end{equation}
+kde $\mu$ je viskozita kapaliny nebo plynu a $\mathbf{v}_i$ je rychlost èástice $i$. Tato síla je také nesymetrická. Je symetrizována následovnì:
+\begin{equation}
+  \label{viscosity_2}
+  \mathbf{f}_i^{viscosity} = \mu \sum_{j} m_j \frac{\mathbf{v}_j - \mathbf{v}_i}{\rho_j} \nabla^2 W(\mathbf{r}_i - \mathbf{r}_j,h)
+\end{equation}
+
+Pro kapalinu by bylo vhodné poèítat povrchové napìtí. To my pro dým nepotøebujeme. Urèujeme vztlakovou sílu, která je zpùsobena ¹íøením teplot. My modelujeme izotermální plyn proto ji vypoèítáme jako:
+\begin{equation}
+  \label{buoyancy}
+  \mathbf{f}_i^{buoyancy} = b(\rho_i - \rho_0)\mathbf{g}
+\end{equation}
+kde $b > 0$ je koeficient vztlaku. Pokud bude hustota men¹í ne¾ klidová, èástice budou tlaèeny vzhùru.
+
+Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesnost SPH metod. Pou¾íváme tøi rùzné kernely, pro dosa¾ení co nejlep¹ích výsledkù simulace, viz \ref{fig:kernels}. Jeden pro výpoèet hustoty, druhý pro tlakovou sílu a tøetí pro sílu viskozity. Tyto kernely jsou 
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=14cm,keepaspectratio]{fig/kernels.png}
+  \caption{Pou¾ité kernely. Zleva doprava pou¾ity pro výpoèet hustoty, tlakovou sílu a sílu viskozity. Tlusté èáry jsou kernely, tenké gradienty a ¹rafované Laplaciány.}
+  \label{fig:kernels}
+\end{figure}
+
+Pro integraci èástic v èase pou¾íváme Eulerovo schéma. Zde se prvnì aktualizuje pozice rychlost $\mathbf{v}$:
+\begin{equation}
+  \label{velocity}
+ \mathbf{v}_{t+\delta t} = \mathbf{v}_{t} + \delta t \mathbf{a}_t
+\end{equation}
+Poté se aktualizuje pozice $\mathbf{r}$:
+\begin{equation}
+  \label{pos}
+ \mathbf{r}_{t+\delta t} = \mathbf{r}_{t} + \delta t \mathbf{v}_{t+\delta t}
+\end{equation}
+
+Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky. 
+
 
 Tady v té kapitole je napsané jak to funguje. Ideálnì nìjaka ta rovnice, napø. \ref{moje-rovnice}. Potom by
 tady mìla byt uvedena literatura, ze které bylo èerpano, napøíklad "Metody sledování paprsku jsou popsané v \cite{Cox2008} \cite{zemcik2006}"
