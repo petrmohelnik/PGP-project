@@ -46,7 +46,7 @@ V této kapitole je popsána teorie pou¾itá pøi výpoètu a zobrazení dýmu.
 \subsection{Simulace}
 Pøístupy pro simulaci kapalin a plynù se dají rozdìlit do dvou kategorií. Jeden je \textit{Eulerùv pøístup}, kde je prostor rozdìlen na fixní 2D nebo 3D møí¾ku. Ka¾dá buòka v møí¾ce obsahuje informace o kapalinì nebo plynu na dané nemìnné pozici. Tyto informace mohou být tlak, hustota, teplota, viskozita aj. Oproti tomu \textit{Lagrangeùv pøístup} vyu¾ívá èástice s promìnlivou pozicí jako nositele informace. Není vázán na fixní møí¾ku a mù¾e se libovolnì rozpínat v prostoru. Na druhou stranu mù¾e být výpoèetnì nároènìj¹í kvùli nutnosti vyhledávání okolních èástic. Tyto pøístupy se nìkdy kombinují.
 
-V tomto projektu jsme zvolili \textit{Lagrangeovu metodu} zalo¾enou na \textit{Smoothed Particle Hydrodynamics} (\textit{SPH}), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. \textit{SPH} je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv.
+V tomto projektu jsme zvolili \textit{Lagrangeovu metodu} \cite{Muller} zalo¾enou na \textit{Smoothed Particle Hydrodynamics} (\textit{SPH}), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. \textit{SPH} je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv.
 V \textit{SPH} se fyzikální hodnota na pozici $\mathbf{r}$ urèí jako vá¾ená suma fyzikálních hodnot $\phi_j$ sousedních èástic $j$:
 \begin{equation}
   \label{basic}
@@ -96,7 +96,7 @@ kde $\mu$ je viskozita kapaliny nebo plynu a $\mathbf{v}_i$ je rychlost èástice 
   \mathbf{f}_i^{viscosity} = \mu \sum_{j} m_j \frac{\mathbf{v}_j - \mathbf{v}_i}{\rho_j} \nabla^2 W(\mathbf{r}_i - \mathbf{r}_j,h)
 \end{equation}
 
-Pro kapalinu by bylo vhodné poèítat povrchové napìtí. To my pro dým nepotøebujeme. Urèujeme vztlakovou sílu, která je zpùsobena ¹íøením teplot. My modelujeme izotermální plyn proto ji vypoèítáme jako:
+Pro kapalinu by bylo vhodné poèítat povrchové napìtí. To my pro dým nepotøebujeme. Urèujeme vztlakovou sílu \cite{kelager06}, která je zpùsobena ¹íøením teplot. My modelujeme izotermální plyn proto ji vypoèítáme jako:
 \begin{equation}
   \label{buoyancy}
   \mathbf{f}_i^{buoyancy} = b(\rho_i - \rho_0)\mathbf{g}
@@ -107,7 +107,7 @@ Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesn
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[width=14cm,keepaspectratio]{fig/kernels.png}
+  \includegraphics[width=13cm,keepaspectratio]{fig/kernels.png}
   \caption{Pou¾ité kernely. Zleva doprava pou¾ity pro výpoèet hustoty, tlakovou sílu a sílu viskozity. Tlusté èáry jsou kernely, tenké gradienty a ¹rafované Laplaciány.}
   \label{fig:kernels}
 \end{figure}
@@ -115,17 +115,32 @@ Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesn
 Pro integraci èástic v èase pou¾íváme Eulerovo schéma. Zde se prvnì aktualizuje pozice rychlost $\mathbf{v}$:
 \begin{equation}
   \label{velocity}
- \mathbf{v}_{t+\delta t} = \mathbf{v}_{t} + \delta t \mathbf{a}_t
+ \mathbf{v}_{t+\Delta t} = \mathbf{v}_{t} + \Delta t \mathbf{a}_t
 \end{equation}
 Poté se aktualizuje pozice $\mathbf{r}$:
 \begin{equation}
   \label{pos}
- \mathbf{r}_{t+\delta t} = \mathbf{r}_{t} + \delta t \mathbf{v}_{t+\delta t}
+ \mathbf{r}_{t+\Delta t} = \mathbf{r}_{t} + \Delta t \mathbf{v}_{t+\Delta t}
 \end{equation}
 
-Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky.
+Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky. 
 
-\subsection{Vykrelsení}
+\subsection{Øazení}
+Pro správné zobrazování èástic je potøeba øazení. Pro implementaci jsme zvolili Bitonic sort \cite{bitonic_paper}, proto¾e je paralelní a datovì nezávislý a tudí¾ vhodný pro implementaci na GPU. Provádí $O(n\log(n^2))$ porovnání. Algoritmus øadí bitonické sekvence. Bitonická sekvence je sekvence, kde $x_0 \leq \dots \leq x_k \geq \dots \geq x_{n-1}$ pro nìjaké $k, 0 \leq k \leq n$, nebo cyklické posunutí této sekvence. 
+
+Bitonic sort (viz obrázek \ref{fig:bitonic}) provádí $\log n$ iterací, kde výstupem ka¾dého prùchodu je pole tvoøené støídavì rostoucími a klesajícími posloupnostmi o velikosti $2^i$, kde $1 \leq i \leq \log n$ je èíslo iterace. Toho se dosáhne dal¹ími $i$ iteracemi v rámci $i$-té iterace. Ka¾dá tato iterace provádí porovnání mezi prvky s polovièní vzdáleností ne¾ ta pøedchozí (viz obrázek \ref{fig:bitonic}). Nakonec vznikne jedna rostoucí nebo klesající posloupnost.
+
+Takto funguje bitonic sort pro posloupnosti délky mocniny 2. Triviální øe¹ení pro libovolné délky posloupnosti by bylo na konec uva¾ovat prvky maximální (resp. minimální) hodnoty. Proto¾e bitonic sort øadí prvky v sekvencích o støídajícíh se smìrech (rostoucí nebo klesající), tyto prvky by byly pøesouvány a musely by tedy fyzicky existovat. 
+
+Nicménì v bitonic sortu není podstatné zda jsou sekvence øazeny jako rostoucí/klesající nebo naopak. Proto mù¾e být øazení upraveno tak, aby v ka¾dé iteraci $i$ byla na konci rostoucí (resp. klesající) sekvence a tím hodnoty nebudou nikdy pøesouvány a tudí¾ nemusí existovat.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=13cm,keepaspectratio]{fig/BitonicSort1.png}
+  \caption{Sorting network Bitonic sortu. Pøevzato z Wikipedie.}
+  \label{fig:bitonic}
+\end{figure}
+\subsection{Vykreslení}
 Pøi kroku vykreslování jsme vycházeli z \cite{vps1}, kde byla pøedstavena technika seøazení pomocí tzv. \textit{half vektoru} (\textit{HV}). Tento vektor je otoèen mezi smìrem pohledu kamery a pozice svìtla (obr. \ref{fig:half}). Hlavní výhodou je, ¾e k vykreslení staèí pouze jedna hloubková mapa. Dým je pak vykreslen v postupných øezech, které jsou kolmé ke smìru \textit{HV}. A díky tomu lze akumulovat zastínìní pomocí \textit{blendingu} do tzv. \textit{light bufferu} (\textit{LB}) a také vypoèítat \textit{hloubkovou mapu}.
 
 \begin{figure}[htb]
@@ -148,7 +163,26 @@ Pøi stínování je pak vyu¾it výsledek \textit{light bufferu} spolu se \textit{stí
 Pro implementaci jsme pou¾ili \textit{OpenGL} ve verzi {\ttfamily 4.3}. K simulaci dýmu byly vyu¾ity \textit{compute shadery} spolu s \textit{shader storage} buffery. V èásti stínovány zaji¹»ovaly \textit{framebuffery} záznam do textur.
 
 \subsection{Simulace}
-Text...
+Pro simulaci je zavedeno nìkolik  shader storage buffer object (SSBO), v¹echny mají velikost maximálního poètu èástic v systému.
+
+Základní buffer je ParticlePool, který slou¾í pro ulo¾ení èástic. Ká¾dá èástice má ulo¾ených 12 floatù: pozici, rychlost, sílu, hustotu, tlak a èas ¾ivota. 
+
+Dal¹í je DeadList, který obsahuje indexy do ParticlePool s èásticemi, které jsou volné k pou¾ití. K tomu se pou¾ívá atomický èítaè, urèující pozici od které vpravo jsou volné indexy.
+
+SortList slou¾í k seøazení èástic. Pro ka¾dou èástici obsahuje klíè a index do ParticlePool. Vyu¾ívá atomický èítaè urèující poèet èástic, které se budou zobrazovat, tedy øadit.
+
+U simulace je nutné procházet okolní èástice. Pokud nechceme provádìt $n^2$ porovnání, musíme to nìjak øe¹it. Pou¾íváme uniformní møí¾ku zalo¾enou na øazení, jak je nastínìno v \cite{grid}. Tato møí¾ka omezuje pohyb èástic pouze do prostoru pokrytého møízkou. Pro neomezený pohyb èástic se dají pou¾ít hashovací metody, ale ty mohou být pomalej¹í, proto¾e do sousedních oblasti mapují èástice, které sousední nejsou. Tato møí¾ka se vytváøí ka¾dý snímek znovu. Pro ka¾dou èástici se urèí do jaké buòky spadá. Index této buòky se pou¾ije jako klíè pro øazení. Po seøazení èástic jsou zji¹tìny a ulo¾eny poèáteèní indexy pro ka¾dou buòku. Pøi procházení okolních èástic se prochází $3 \times 3 \times 3 = 27$  okolních bunìk pro ka¾dou èástici. Podporuje neomezené mno¾ství èástic v buòce a díky seøazení urychluje pøístupy do pamìti pro okolní èástice. K tomu jsou zavedeny dal¹í dva SSBO. GridList obsahuje index do ParticlePool a index buòky jako klíè pro øazení. Vyu¾ívá atomický èítaè urèující poèet èástic aktuálnì v oblasti møí¾ky. StarIndexList obsahuje pro ka¾dou buòku její poèáteèní index v GridList.
+
+\vspace*{1\baselineskip}
+
+V programu je pou¾ito mno¾ství compute shaderu. Popí¹eme si je v poøadí v jakém se volají.
+
+emit\_particle generuje malé mno¾ství èástic v èasových intervalech. Vytáhne si z DeadListu èástici a nastaví ji pozici, rychlost a èas ¾ivota.
+
+grid\_particle\_divide pro ka¾dou èástici urèí index buòky do které spadá, pokud do ¾ádné nespadá, èástice je vrácena do DeadListu. Dále jsou èástice seøazeny (øazení bude popsáno dále) a v compute shaderu grid\_particle\_find\_start jsou vyhledány poèáteèní indexy bunìk a èástice z ParticlePool jsou zkopírovány do ParticlePoolSorted v seøazeném poøadí. To by mìlo urychlit pøístup do pamìti pøi procházení okolních èástic, díky blízkosti èástic z jedné buòce v pamìti. Velikost bunìk je shodná s prùmìrem $h$ vyhlazovacího kernelu. Tím je zaji¹tìno, ¾e v¹echny èástice spadající do jeho vlivu budou v nìkteré  z 27 okolních bunìk.
+
+Nyní pøichází na øadu samotná simulace. simulate\_particle\_density prochází pro ka¾dou èástici 27 bunìk møí¾ky a v ka¾dé v¹echny èástice, s tìmi potom vypoèítá hustotu za vyu¾ití vyhlazovací funkce podle rovnice \ref{density}. Kvùli velkému mno¾ství pøístupù do globální pamìti je tento velmi pomalý s velkým vlivem na celkovou rychlost. simulate\_particle\_pressure vypoèítá tlak podle rovnice \ref{pressure_3} v závislosti na hustotì spoèítané v pøedchozím kroku.
+
 
 \subsection{Vykreslení}
 Pøi vykreslování byla pou¾ita metoda seøazení øezù dýmu pomocí \textit{half vektoru}, nicménì nepodaøil se nám správnì nastavit re¾im míchání barev. Z toho dùvodu byl dým po simulaci øazen dvakrát, a to pro pohled z pozice svìtla a z pozice kamery.
@@ -167,13 +201,6 @@ Dal¹ím krokem pøi vykreslování je vytvoøení efektu pro paprsky slunce (\textit{s
 Pøi standardním vykreslování scény z pozice kamery jsou nejprve kresleny neprùhledné objekty. Pro nì jsou vyu¾ity \textit{stínové mapy} a \textit{akumulaèní buffer} (\textit{light}) z pøedchozích krokù. \textit{Stínové mapy} (\textit{hloubkové}) jsou klasicky pou¾ity s \textit{shadow samplerem} a s projektivním dotazováním se na zastínìní. Dále je vyu¾it \textit{light buffer} stejným zpùsobem pro urèení prùsvitnosti dýmu. Tento postup je dál kombinován se \textit{stínovou mapou} dýmu, pro oøíznutí zastínìní pro bli¾¹í pøedmìty ke svìtlu.
 
 Pøi stínování èástic dýmu je také vyu¾ity \textit{stínové mapy} pøedmetù a dýmu stejným zpùsobem. Pro urèení prùsvitnosti v dýmu pro èástice, které nele¾í pøímo na svìtle, ale jsou zastínìny jinými èásticemi se vyu¾ívá kombinace \textit{stínové mapy} dýmu a \textit{light bufferu}. Tato stínová mapa je v¹ak pou¾ita jako \textit{hloubková mapa}, pomocí které, spolu s hloubkou fragmentu je urèen rozdíl hloubky. Ten je vyu¾it k výpoètu míry zastínìní.
-
-Tady struènì popi¹te, jakým zpùsobem jste prakticky projekt øe¹ili. Uveïte zejména pou¾ité
-technologie a algoritmy. Zamìøte se hlavnì na zajímavé a dùle¾ité èásti implementace a také na
-problémy, které jste øe¹ili. Není nutné popisovat ka¾dou tøídu.
-
-Napø. uveïte, jak jste matematický popis z pøedchozí kapitoly implementovali prakticky.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

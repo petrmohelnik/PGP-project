@@ -20,7 +20,6 @@ struct ParticlePool
 	glm::vec4 pos; //w = ttl
 	glm::vec4 velocity; //w=density
 	glm::vec4 force; //w=pressure
-	glm::vec4 velocity_prev; //v case -deltaT/2 - pouziti pro leap frog integrator
 	ParticlePool(glm::vec4 p, glm::vec4 v, glm::vec4 f) : pos(p), velocity(v), force(f) {}
 };
 

@@ -1,5 +1,14 @@
 \begin{thebibliography}{PSHL10}
 
+\bibitem[Gre08]{grid}
+Simon Green.
+\newblock {Particle-based Fluid Simulation}, 2008.
+
+\bibitem[Gre12]{vps1}
+Simon Green.
+\newblock Volumetric particle shadows.
+\newblock Technical report, NVIDIA, 2012.
+
 \bibitem[Kel06]{kelager06}
 Micky Kelager.
 \newblock {Lagrangian Fluid Dynamics Using Smoothed Particle Hydrodynamics}.
