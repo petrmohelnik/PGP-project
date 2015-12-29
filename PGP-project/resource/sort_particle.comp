@@ -1,4 +1,4 @@
-#version 450
+#version 430
 
 #define ORDER(x,a,b) {bool swap = bool(int(reverse) ^ int(x[a].distance < x[b].distance)); \
 	SortList tmp_a = x[a]; SortList tmp_b = x[b]; \

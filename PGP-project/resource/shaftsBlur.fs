@@ -1,4 +1,4 @@
-#version 450
+#version 430
 
 uniform sampler2D texDifSampler;
 uniform vec3 lightPos;

@@ -372,7 +372,7 @@ void MainScene::render(Uint32 dt)
 	glEnable(GL_DEPTH_TEST);
 
 	// testing only, don't panic (SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) --------------------------
-	const bool showDebugShadow = true;
+	/*const bool showDebugShadow = false;
 
 	if(showDebugShadow)
 	{
@@ -450,5 +450,5 @@ void MainScene::render(Uint32 dt)
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_TEXTURE_2D);
-	}
+	}*/
 }

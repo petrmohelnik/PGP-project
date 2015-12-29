@@ -1,4 +1,4 @@
-#version 450
+#version 430
 
 struct ParticlePool {
 	vec4 pos; //w = ttl

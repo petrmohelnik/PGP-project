@@ -1,4 +1,4 @@
-#version 450
+#version 430
 
 uniform mat3 ti_m;
 uniform vec3 viewPos;
