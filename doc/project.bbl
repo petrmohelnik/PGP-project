@@ -1,21 +1,22 @@
-\newcommand{\etalchar}[1]{$^{#1}$}
-\begin{thebibliography}{CMB{\etalchar{+}}08}
+\begin{thebibliography}{PSHL10}
 
-\bibitem[CMB{\etalchar{+}}08]{Cox2008}
-Ingemar Cox, Matthew Miller, Jeffrey Bloom, Jessica Fridrich, and Ton Kalker.
-\newblock {\em Digital Watermarking and Steganography}.
-\newblock Morgan Kaufmann Publishers, 2nd edition, 2008.
+\bibitem[Kel06]{kelager06}
+Micky Kelager.
+\newblock {Lagrangian Fluid Dynamics Using Smoothed Particle Hydrodynamics}.
+\newblock January 2006.
 
-\bibitem[Wik04]{wikipedia}
-Wikipedia.
-\newblock Plagiarism --- {W}ikipedia{,} the free encyclopedia, 2004.
-\newblock [Online; accessed 22-July-2004].
+\bibitem[MCG03]{Muller}
+Matthias M\"{u}ller, David Charypar, and Markus Gross.
+\newblock Particle-based fluid simulation for interactive applications.
+\newblock In {\em Proceedings of the 2003 ACM SIGGRAPH/Eurographics Symposium
+  on Computer Animation}, SCA '03, pages 154--159, Aire-la-Ville, Switzerland,
+  Switzerland, 2003. Eurographics Association.
 
-\bibitem[ZHBJ06]{zemcik2006}
-Pavel Zem{\v c}{\' i}k, Adam Herout, V{\' i}t{\v e}zslav Beran, and Ji{\v r}{\'
-  i}Gran{\' a}t.
-\newblock Hardware accelerated image analysis in fpga.
-\newblock In {\em Proceedings of SCCG}, page~4. Comenius University in
-  Bratislava, 2006.
+\bibitem[PSHL10]{bitonic_paper}
+Hagen Peters, Ole Schulz-Hildebrandt, and Norbert Luttenberger.
+\newblock Fast in-place sorting with cuda based on bitonic sort.
+\newblock In {\em Proceedings of the 8th International Conference on Parallel
+  Processing and Applied Mathematics: Part I}, PPAM'09, pages 403--410, Berlin,
+  Heidelberg, 2010. Springer-Verlag.
 
 \end{thebibliography}

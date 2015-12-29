@@ -47,7 +47,7 @@ akceleraci ...
 \section{Teorie}
 Pøístupy pro simulaci kapalin a plynù se dají rozdìlit do dvou kategorií. Jeden je Eulerùv pøístup, kde je prostor rozdìlen na fixní 2D nebo 3D møí¾ku. Ka¾dá buòka v møí¾ce obsahuje informace o kapalinì nebo plynu na dané nemìnné pozici. Tyto informace mohou být tlak, hustota, teplota, viskozita aj. Oproti tomu Lagrangeùv pøístup vyu¾ívá èástice s promìnlivou pozicí jako nositele informace. Oproti Eulerovu pøístupu není vázán na fixní møí¾ku a mù¾e se libovolnì rozpínat v prostoru. Na druhou stranu mù¾e být výpoèetnì nároènìj¹í kvùli nutnosti vyhledávání okolních èástic. Tyto pøístupy se nìkdy kombinují.
 
-V tomto projektu jsme zvolily Lagrangeovu metodu zalo¾enou na Smoothed Particle Hydrodynamics (SPH), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. SPH je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv. 
+V tomto projektu jsme zvolily Lagrangeovu metodu \cite{Muller} zalo¾enou na Smoothed Particle Hydrodynamics (SPH), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. SPH je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv. 
 V SPH se fyzikální hodnota na pozici $\mathbf{r}$ urèí jako vá¾ená suma fyzikálních hodnot $\phi_j$ sousedních èástic $j$:
 \begin{equation}
   \label{basic}
@@ -97,18 +97,18 @@ kde $\mu$ je viskozita kapaliny nebo plynu a $\mathbf{v}_i$ je rychlost èástice 
   \mathbf{f}_i^{viscosity} = \mu \sum_{j} m_j \frac{\mathbf{v}_j - \mathbf{v}_i}{\rho_j} \nabla^2 W(\mathbf{r}_i - \mathbf{r}_j,h)
 \end{equation}
 
-Pro kapalinu by bylo vhodné poèítat povrchové napìtí. To my pro dým nepotøebujeme. Urèujeme vztlakovou sílu, která je zpùsobena ¹íøením teplot. My modelujeme izotermální plyn proto ji vypoèítáme jako:
+Pro kapalinu by bylo vhodné poèítat povrchové napìtí. To my pro dým nepotøebujeme. Urèujeme vztlakovou sílu \cite{kelager06}, která je zpùsobena ¹íøením teplot. My modelujeme izotermální plyn proto ji vypoèítáme jako:
 \begin{equation}
   \label{buoyancy}
   \mathbf{f}_i^{buoyancy} = b(\rho_i - \rho_0)\mathbf{g}
 \end{equation}
 kde $b > 0$ je koeficient vztlaku. Pokud bude hustota men¹í ne¾ klidová, èástice budou tlaèeny vzhùru.
 
-Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesnost SPH metod. Pou¾íváme tøi rùzné kernely, pro dosa¾ení co nejlep¹ích výsledkù simulace, viz \ref{fig:kernels}. Jeden pro výpoèet hustoty, druhý pro tlakovou sílu a tøetí pro sílu viskozity. Tyto kernely jsou 
+Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesnost SPH metod. Pou¾íváme tøi rùzné kernely, pro dosa¾ení co nejlep¹ích výsledkù simulace, viz obrázek \ref{fig:kernels}. Jeden pro výpoèet hustoty, druhý pro tlakovou sílu a tøetí pro sílu viskozity. Tyto kernely jsou 
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[width=14cm,keepaspectratio]{fig/kernels.png}
+  \includegraphics[width=13cm,keepaspectratio]{fig/kernels.png}
   \caption{Pou¾ité kernely. Zleva doprava pou¾ity pro výpoèet hustoty, tlakovou sílu a sílu viskozity. Tlusté èáry jsou kernely, tenké gradienty a ¹rafované Laplaciány.}
   \label{fig:kernels}
 \end{figure}
@@ -116,35 +116,32 @@ Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesn
 Pro integraci èástic v èase pou¾íváme Eulerovo schéma. Zde se prvnì aktualizuje pozice rychlost $\mathbf{v}$:
 \begin{equation}
   \label{velocity}
- \mathbf{v}_{t+\delta t} = \mathbf{v}_{t} + \delta t \mathbf{a}_t
+ \mathbf{v}_{t+\Delta t} = \mathbf{v}_{t} + \Delta t \mathbf{a}_t
 \end{equation}
 Poté se aktualizuje pozice $\mathbf{r}$:
 \begin{equation}
   \label{pos}
- \mathbf{r}_{t+\delta t} = \mathbf{r}_{t} + \delta t \mathbf{v}_{t+\delta t}
+ \mathbf{r}_{t+\Delta t} = \mathbf{r}_{t} + \Delta t \mathbf{v}_{t+\Delta t}
 \end{equation}
 
 Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky. 
 
+\vspace*{1\baselineskip}
 
-Tady v té kapitole je napsané jak to funguje. Ideálnì nìjaka ta rovnice, napø. \ref{moje-rovnice}. Potom by
-tady mìla byt uvedena literatura, ze které bylo èerpano, napøíklad "Metody sledování paprsku jsou popsané v \cite{Cox2008} \cite{zemcik2006}"
+Pro správné zobrazování èástic je potøeba øazení. Pro implementaci jsme zvolili Bitonic sort \cite{bitonic_paper}, proto¾e je paralelní a datovì nezávislý a tudí¾ vhodný pro implementaci na GPU. Provádí $O(n\log(n^2))$ porovnání. Algoritmus øadí bitonické sekvence. Bitonická sekvence je sekvence, kde $x_0 \leq \dots \leq x_k \geq \dots \geq x_{n-1}$ pro nìjaké $k, 0 \leq k \leq n$, nebo cyklické posunutí této sekvence. 
 
+Bitonic sort (viz obrázek \ref{fig:bitonic}) provádí $\log n$ iterací, kde výstupem ka¾dého prùchodu je pole tvoøené støídavì rostoucími a klesajícími posloupnostmi o velikosti $2^i$, kde $1 \leq i \leq \log n$ je èíslo iterace. Toho se dosáhne dal¹ími $i$ iteracemi v rámci $i$-té iterace. Ka¾dá tato iterace provádí porovnání mezi prvky s polovièní vzdáleností ne¾ ta pøedchozí (viz obrázek \ref{fig:bitonic}). Nakonec vznikne jedna rostoucí nebo klesající posloupnost.
 
-\begin{equation}
-  \label{moje-rovnice}
-  c = a + b
-\end{equation}
+Takto funguje bitonic sort pro posloupnosti délky mocniny 2. Triviální øe¹ení pro libovolné délky posloupnosti by bylo na konec uva¾ovat prvky maximální (resp. minimální) hodnoty. Proto¾e bitonic sort øadí prvky v sekvencích o støídajícíh se smìrech (rostoucí nebo klesající), tyto prvky by byly pøesouvány a musely by tedy fyzicky existovat. 
 
-Na obrázku \ref{fig:obrazek} je ukázané jak to funguje. Nìjaké schémátko pipeline..
+Nicménì v bitonic sortu není podstatné zda jsou sekvence øazeny jako rostoucí/klesající nebo naopak. Proto mù¾e být øazení upraveno tak, aby v ka¾dé iteraci $i$ byla na konci rostoucí (resp. klesající) sekvence a tím hodnoty nebudou nikdy pøesouvány a tudí¾ nemusí existovat.
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[width=5cm,keepaspectratio]{fig/obrazek.jpg}
-  \caption{Nìjaký ten diagram, tøeba pøevzaný z \cite{wikipedia}}
-  \label{fig:obrazek}
+  \includegraphics[width=13cm,keepaspectratio]{fig/BitonicSort1.png}
+  \caption{Sorting network Bitonic sortu. Pøevzato z Wikipedie.}
+  \label{fig:bitonic}
 \end{figure}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Popis øe¹ení}
