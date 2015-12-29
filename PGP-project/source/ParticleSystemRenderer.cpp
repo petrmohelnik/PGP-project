@@ -21,7 +21,7 @@ bool ParticleSystemRenderer::initRenderer(Model &m, int count, GLuint p, GLuint 
 	return true;
 }
 
-void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, const glm::mat4 &mvpDepth2, GLuint texDepth, GLuint texDepth2, GLuint texDepth3, int dt, DrawType drawType)
+void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &lights, const glm::vec3 &ambientLight, const glm::mat4 &mvpDepth, const glm::mat4 &mvpDepth2, GLuint texDepth, GLuint texDepth2, GLuint texDepth3, GLuint texDepth4, int dt, DrawType drawType)
 {
 	technique->setAmbientLight(ambientLight + technique->getMesh()->getMaterial()->getEmission());
 	technique->setP(cam.getProjection());
@@ -39,8 +39,8 @@ void ParticleSystemRenderer::render(Camera &cam, const std::vector<Light> &light
 		0.0f, 0.0f, 0.5f, 0.0f,
 		0.5f, 0.5f, 0.5f, 1.0f);
 
-	technique->setDepth(bias * mvpDepth * M, bias * mvpDepth2 * M, texDepth, texDepth2, texDepth3);
-	technique->bindTexDepth(1, 2, 3);
+	technique->setDepth(bias * mvpDepth * M, bias * mvpDepth2 * M, texDepth, texDepth2, texDepth3, texDepth4);
+	technique->bindTexDepth(1, 2, 3, 4);
 	technique->bindTexDif(0);
 
 	technique->draw();

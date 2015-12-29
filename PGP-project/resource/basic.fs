@@ -8,6 +8,7 @@ uniform sampler2D texDifSampler;
 uniform sampler2DShadow texDepthSampler;
 uniform sampler2DShadow texDepth2Sampler;
 uniform sampler2D texDepth3Sampler;
+uniform sampler2D texDepth4Sampler;
 
 in vec3 f_pos;
 in vec3 f_norm;
@@ -33,9 +34,11 @@ void main()
 
 	float depthVis = textureProj(texDepthSampler, f_depthPos).r;// texture(texDepthSampler, f_depthPos.xyz / f_depthPos.w).r;
 	float depth2Vis = textureProj(texDepth2Sampler, f_depth2Pos).r; // kombinace zastínìní
+
 	if(depth2Vis < 1.0)
 	{
-		depth2Vis += clamp(1.0 - textureProj(texDepth3Sampler, f_depth2Pos).r * 10.0, 0.0, 1.0);
+    //const float diff = clamp((((f_depth2Pos.z) / f_depth2Pos.w) - (1.0 - textureProj(texDepth4Sampler, f_depth2Pos.xyw).r)) * 10000.0, 0.0, 1.0);
+		depth2Vis += 1.0 - (clamp(textureProj(texDepth3Sampler, f_depth2Pos).r * 10.0, 0.0, 1.0)/* * diff*/);
 		depth2Vis = clamp(depth2Vis, 0.0, 1.0);
 	}
 

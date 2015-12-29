@@ -53,6 +53,7 @@ private:
 	//GLuint rboDepth;
 	GLuint textureDepth;
 	GLuint textureDepthParticle;
+  GLuint textureDepthParticle2;
 	GLuint textureDepthParticleAccum;
 	GLuint textureShafts;
 	GLuint textureShaftsOut;

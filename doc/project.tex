@@ -36,19 +36,19 @@
 
 \section{Úvod}
 
-Tato práce se zamìøuje na realistickou simulaci a zobrazení dýmu pomocí grafické karty. Vyu¾ití by mìlo být v aplikacích pracujících v reálném èase, napø. hrách. V poèítaèových hrách mù¾e být dým vyu¾it u explozí, mlhy a ohnì apod.
-
-Tady by mìlo být napsané o èem práce je a k èemu to je dobré. Napøíklad: Tato práce se zabývá akcelerací
-raytracingu na CUDA. Raytracing se pou¾ívá ve fotorealistické grafice a herní grafice. CUDA umo¾òuje
-akceleraci ...
+Tato práce se zamìøuje na realistickou simulaci a zobrazení dýmu pomocí grafické karty. Vyu¾ití by mìlo být v aplikacích pracujících v reálném èase, napø. hrách. V poèítaèových hrách mù¾e být dým vyu¾it u explozí, mlhy, ohnì apod.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Teorie}
-Pøístupy pro simulaci kapalin a plynù se dají rozdìlit do dvou kategorií. Jeden je Eulerùv pøístup, kde je prostor rozdìlen na fixní 2D nebo 3D møí¾ku. Ka¾dá buòka v møí¾ce obsahuje informace o kapalinì nebo plynu na dané nemìnné pozici. Tyto informace mohou být tlak, hustota, teplota, viskozita aj. Oproti tomu Lagrangeùv pøístup vyu¾ívá èástice s promìnlivou pozicí jako nositele informace. Oproti Eulerovu pøístupu není vázán na fixní møí¾ku a mù¾e se libovolnì rozpínat v prostoru. Na druhou stranu mù¾e být výpoèetnì nároènìj¹í kvùli nutnosti vyhledávání okolních èástic. Tyto pøístupy se nìkdy kombinují.
+V této kapitole je popsána teorie pou¾itá pøi výpoètu a zobrazení dýmu.
 
-V tomto projektu jsme zvolily Lagrangeovu metodu \cite{Muller} zalo¾enou na Smoothed Particle Hydrodynamics (SPH), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. SPH je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv. 
-V SPH se fyzikální hodnota na pozici $\mathbf{r}$ urèí jako vá¾ená suma fyzikálních hodnot $\phi_j$ sousedních èástic $j$:
+\subsection{Simulace}
+Pøístupy pro simulaci kapalin a plynù se dají rozdìlit do dvou kategorií. Jeden je \textit{Eulerùv pøístup}, kde je prostor rozdìlen na fixní 2D nebo 3D møí¾ku. Ka¾dá buòka v møí¾ce obsahuje informace o kapalinì nebo plynu na dané nemìnné pozici. Tyto informace mohou být tlak, hustota, teplota, viskozita aj. Oproti tomu \textit{Lagrangeùv pøístup} vyu¾ívá èástice s promìnlivou pozicí jako nositele informace. Není vázán na fixní møí¾ku a mù¾e se libovolnì rozpínat v prostoru. Na druhou stranu mù¾e být výpoèetnì nároènìj¹í kvùli nutnosti vyhledávání okolních èástic. Tyto pøístupy se nìkdy kombinují.
+
+V tomto projektu jsme zvolili \textit{Lagrangeovu metodu} \cite{Muller} zalo¾enou na \textit{Smoothed Particle Hydrodynamics} (\textit{SPH}), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. \textit{SPH} je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv.
+V \textit{SPH} se fyzikální hodnota na pozici $\mathbf{r}$ urèí jako vá¾ená suma fyzikálních hodnot $\phi_j$ sousedních èástic $j$:
+
 \begin{equation}
   \label{basic}
   \phi(\mathbf{r}) = \sum_{j} m_j \frac{\phi_j}{\rho_j}W(\mathbf{r} - \mathbf{r}_j,h)
@@ -104,7 +104,7 @@ Pro kapalinu by bylo vhodné poèítat povrchové napìtí. To my pro dým nepotøebujem
 \end{equation}
 kde $b > 0$ je koeficient vztlaku. Pokud bude hustota men¹í ne¾ klidová, èástice budou tlaèeny vzhùru.
 
-Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesnost SPH metod. Pou¾íváme tøi rùzné kernely, pro dosa¾ení co nejlep¹ích výsledkù simulace, viz obrázek \ref{fig:kernels}. Jeden pro výpoèet hustoty, druhý pro tlakovou sílu a tøetí pro sílu viskozity. Tyto kernely jsou 
+Vyhlazovací funkce $W(\mathbf{r},h)$ velmi ovlivòují rychlost, stabilitu a pøesnost \textit{SPH} metod. Pou¾íváme tøi rùzné kernely, pro dosa¾ení co nejlep¹ích výsledkù simulace, (obr. \ref{fig:kernels}). Jeden pro výpoèet hustoty, druhý pro tlakovou sílu a tøetí pro sílu viskozity.
 
 \begin{figure}[htb]
   \centering
@@ -126,8 +126,7 @@ Poté se aktualizuje pozice $\mathbf{r}$:
 
 Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky. 
 
-\vspace*{1\baselineskip}
-
+\subsection{Øazení}
 Pro správné zobrazování èástic je potøeba øazení. Pro implementaci jsme zvolili Bitonic sort \cite{bitonic_paper}, proto¾e je paralelní a datovì nezávislý a tudí¾ vhodný pro implementaci na GPU. Provádí $O(n\log(n^2))$ porovnání. Algoritmus øadí bitonické sekvence. Bitonická sekvence je sekvence, kde $x_0 \leq \dots \leq x_k \geq \dots \geq x_{n-1}$ pro nìjaké $k, 0 \leq k \leq n$, nebo cyklické posunutí této sekvence. 
 
 Bitonic sort (viz obrázek \ref{fig:bitonic}) provádí $\log n$ iterací, kde výstupem ka¾dého prùchodu je pole tvoøené støídavì rostoucími a klesajícími posloupnostmi o velikosti $2^i$, kde $1 \leq i \leq \log n$ je èíslo iterace. Toho se dosáhne dal¹ími $i$ iteracemi v rámci $i$-té iterace. Ka¾dá tato iterace provádí porovnání mezi prvky s polovièní vzdáleností ne¾ ta pøedchozí (viz obrázek \ref{fig:bitonic}). Nakonec vznikne jedna rostoucí nebo klesající posloupnost.
@@ -142,6 +141,23 @@ Nicménì v bitonic sortu není podstatné zda jsou sekvence øazeny jako rostoucí/kl
   \caption{Sorting network Bitonic sortu. Pøevzato z Wikipedie.}
   \label{fig:bitonic}
 \end{figure}
+
+\subsection{Vykrelsení}
+Pøi kroku vykreslování jsme vycházeli z \cite{vps1}, kde byla pøedstavena technika seøazení pomocí tzv. \textit{half vektoru} (\textit{HV}). Tento vektor je otoèen mezi smìrem pohledu kamery a pozice svìtla (obr. \ref{fig:half}). Hlavní výhodou je, ¾e k vykreslení staèí pouze jedna hloubková mapa. Dým je pak vykreslen v postupných øezech, které jsou kolmé ke smìru \textit{HV}. A díky tomu lze akumulovat zastínìní pomocí \textit{blendingu} do tzv. \textit{light bufferu} (\textit{LB}) a také vypoèítat \textit{hloubkovou mapu}.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=12cm,keepaspectratio]{fig/half.png}
+  \caption{Ukázka dvou pøípadù výsledku \textit{half vektoru}, který je umístìn mezi vektor pohledu kamery a smìru svìtla.}
+  \label{fig:half}
+\end{figure}
+
+Nicménì pøi kreslení je dùle¾ité, aby byl dým kreslen správným smìrem. Pokud je smìr svìtla a pozorovatele podobný (úhel mezi nimi je men¹í ne¾ 90°) potom je dým kreslen zepøedu dozadu. Pokud svìtlo le¾í naproti kameøe, potom jsou èástice kresleny zezadu dopøedu.
+
+Samotné øazení øezù pracuje na principu projekce pozice èástice na \textit{HV}. Tuto projekci lze jednodu¹e spoèítat pomocí skalárního souèinu.
+
+Pøi stínování je pak vyu¾it výsledek \textit{light bufferu} spolu se \textit{stínovou mapou}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Popis øe¹ení}
