@@ -96,6 +96,7 @@ protected:
 	GLuint texDepthSamplerUniform;
 	GLuint texDepth2SamplerUniform;
 	GLuint texDepth3SamplerUniform;
+  GLuint texDepth4SamplerUniform;
 	GLuint maxParticlesGridDivideUniform;
 	GLuint sizeGridDivideUniform;
 	GLuint hGridDivideUniform;
@@ -117,6 +118,7 @@ protected:
 	GLuint texDepth;
 	GLuint texDepth2;
 	GLuint texDepth3;
+  GLuint texDepth4;
 	GLuint sortCounter;
 
 	GLuint mvUniformShaft;
@@ -138,6 +140,7 @@ protected:
 	int texDepthSampler;
 	int texDepth2Sampler;
 	int texDepth3Sampler;
+  int texDepth4Sampler;
 	GLuint gridCounter;
 	int counter = 0;
 	float time = 0;
@@ -160,9 +163,9 @@ public:
 	void setViewPos(const glm::vec3 &pos);
 	void setHalfVector(const glm::vec3 &halfVec, bool flip);
 	void setAmbientLight(const glm::vec3 &a);
-	void setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3);
+	void setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3, GLuint texture4);
 	void bindTexDif(int t);
-	void bindTexDepth(int t, int t2, int t3);
+	void bindTexDepth(int t, int t2, int t3, int t4);
 
 	Mesh *getMesh();
 };

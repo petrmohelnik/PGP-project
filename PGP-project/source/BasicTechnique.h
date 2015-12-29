@@ -25,10 +25,12 @@ protected:
 	GLuint texDepthSamplerUniform;
 	GLuint texDepth2SamplerUniform;
 	GLuint texDepth3SamplerUniform;
+  GLuint texDepth4SamplerUniform;
 	GLuint texDif;
 	GLuint texDepth;
 	GLuint texDepth2;
 	GLuint texDepth3;
+  GLuint texDepth4;
 
 	GLuint mvpUniformShaft;
 	GLuint ambientLightUniformShaft;
@@ -46,6 +48,7 @@ protected:
 	int texDepthSampler;
 	int texDepth2Sampler;
 	int texDepth3Sampler;
+  int texDepth4Sampler;
 	GLuint drawMode;
 	Mesh *mesh;
 
@@ -59,9 +62,9 @@ public:
 	void setViewPos(const glm::vec3 &v);
 	void setLightPos(const glm::vec3 &p);
 	void setAmbientLight(const glm::vec3 &a);
-	void setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3);
+	void setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3, GLuint texture4);
 	void bindTexDif(int t);
-	void bindTexDepth(int t, int t2, int t3);
+	void bindTexDepth(int t, int t2, int t3, int t4);
 
 	Mesh *getMesh();
 };

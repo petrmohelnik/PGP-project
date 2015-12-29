@@ -34,7 +34,7 @@ void Scene::render(Uint32 dt)
 {
 	for (unsigned int i = 0; i < objects.size(); i++)
 	{
-		objects[i]->render(camera, lights, ambientLight, glm::mat4(), glm::mat4(), 0, 0, 0, dt, Renderer::DRAW_STANDARD);
+		objects[i]->render(camera, lights, ambientLight, glm::mat4(), glm::mat4(), 0, 0, 0, 0, dt, Renderer::DRAW_STANDARD);
 	}
 }
 
@@ -76,6 +76,7 @@ MainScene::MainScene()
 
 	textureDepth = createFboMap(FBO_SHADOW_WIDTH, FBO_SHADOW_HEIGHT, true, true);
 	textureDepthParticle = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, true, false);
+  textureDepthParticle2 = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, false, false);
 	textureDepthParticleAccum = createFboMap(FBO_SHADOW_PARTICLE_WIDTH, FBO_SHADOW_PARTICLE_HEIGHT, false, false);
 	textureShafts = createFboMap(FBO_SHAFTS_WIDTH, FBO_SHAFTS_HEIGHT, false, false);
 	textureShaftsOut = createFboMap(FBO_SHAFTS_WIDTH, FBO_SHAFTS_HEIGHT, false, false);
@@ -108,8 +109,9 @@ MainScene::MainScene()
 	glBindFramebuffer(GL_FRAMEBUFFER, fboDepthParticle);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textureDepthParticle, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureDepthParticleAccum, 0);
-	const GLenum att[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, att);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, textureDepthParticle2, 0);
+	const GLenum att2[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, att2);
 
 	if(GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "fbo error: " << status << "\n";
@@ -121,6 +123,7 @@ MainScene::MainScene()
 	glGenFramebuffers(1, &fboShafts);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboShafts);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureShafts, 0);
+  const GLenum att[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, att);
 	if(GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "fbo error: " << status << "\n";
@@ -288,7 +291,7 @@ void MainScene::render(Uint32 dt)
 	for(unsigned int i = 0; i < objects.size(); i++)
 	{
 		if(reinterpret_cast<BasicTechnique *>(objects[i]->getTechnique())->getMesh()->getMaterial()->getEmission().x == 0.0f)
-			objects[i]->render(camera, lights, ambientLight, mvpDepth, glm::mat4(), 0, 0, 0, dt, Renderer::DRAW_SHADOW);
+			objects[i]->render(camera, lights, ambientLight, mvpDepth, glm::mat4(), 0, 0, 0, 0, dt, Renderer::DRAW_SHADOW);
 	}
 
 	// shadows particle
@@ -302,7 +305,7 @@ void MainScene::render(Uint32 dt)
 
 	particleSystem->simulate(dt);
 	particleSystem->sort(camera, lights);
-	particleSystem->render(camera, lights, ambientLight, mvpDepth, mvpDepth2, 0, 0, 0, dt, Renderer::DRAW_SHADOW);
+	particleSystem->render(camera, lights, ambientLight, mvpDepth, mvpDepth2, 0, 0, 0, 0, dt, Renderer::DRAW_SHADOW);
 
 	// shadts
 	camera = camOld;
@@ -349,9 +352,9 @@ void MainScene::render(Uint32 dt)
 	glViewport(0, 0, static_cast<GLsizei>(camera.getSize().x), static_cast<GLsizei>(camera.getSize().y));
 
 	for(unsigned int i = 0; i < objects.size(); i++)
-		objects[i]->render(camera, lights, ambientLight, mvpDepth, mvpDepth2, textureDepth, textureDepthParticle, textureDepthParticleAccum, dt, Renderer::DRAW_STANDARD);
+		objects[i]->render(camera, lights, ambientLight, mvpDepth, mvpDepth2, textureDepth, textureDepthParticle, textureDepthParticleAccum, textureDepthParticle2, dt, Renderer::DRAW_STANDARD);
 
-	particleSystem->render(camera, lights, ambientLight, mvpDepth, mvpDepth, textureDepth, textureDepthParticle, textureDepthParticleAccum, dt, Renderer::DRAW_STANDARD);
+	particleSystem->render(camera, lights, ambientLight, mvpDepth, mvpDepth, textureDepth, textureDepthParticle, textureDepthParticleAccum, textureDepthParticle2, dt, Renderer::DRAW_STANDARD);
 
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -369,7 +372,7 @@ void MainScene::render(Uint32 dt)
 	glEnable(GL_DEPTH_TEST);
 
 	// testing only, don't panic (SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) --------------------------
-	const bool showDebugShadow = false;
+	const bool showDebugShadow = true;
 
 	if(showDebugShadow)
 	{
@@ -429,6 +432,20 @@ void MainScene::render(Uint32 dt)
 		glTexCoord2f(1.0f, 0.0f);
 		glVertex3f(-1.0f, 1.0f - 3.0f * fboH, 1.0f);
 		glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, textureDepthParticle2);
+
+    glBegin(GL_QUADS);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(-1.0f, 1.0f - 3.0f * fboH, 1.0f);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-1.0f + fboW, 1.0f - 3.0f * fboH, 1.0f);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-1.0f + fboW, 1.0f - 4.0f * fboH, 1.0f);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(-1.0f, 1.0f - 4.0f * fboH, 1.0f);
+    glEnd();
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glEnable(GL_DEPTH_TEST);

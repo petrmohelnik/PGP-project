@@ -26,6 +26,7 @@ void BasicTechnique::init(Mesh &m, GLuint p, GLuint pShaft)
 	texDepthSamplerUniform = glGetUniformLocation(program, "texDepthSampler");
 	texDepth2SamplerUniform = glGetUniformLocation(program, "texDepth2Sampler");
 	texDepth3SamplerUniform = glGetUniformLocation(program, "texDepth3Sampler");
+  texDepth4SamplerUniform = glGetUniformLocation(program, "texDepth4Sampler");
 
 	GLint attr = glGetAttribLocation(program, "v_pos");
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
@@ -85,6 +86,7 @@ void BasicTechnique::draw()
 	glUniform1i(texDepthSamplerUniform, texDepthSampler);
 	glUniform1i(texDepth2SamplerUniform, texDepth2Sampler);
 	glUniform1i(texDepth3SamplerUniform, texDepth3Sampler);
+  glUniform1i(texDepth4SamplerUniform, texDepth4Sampler);
 	
 	glBindVertexArray(vao);
 	glDrawArrays(drawMode, 0, indices);
@@ -136,13 +138,14 @@ void BasicTechnique::setAmbientLight(const glm::vec3 &a)
 	ambientLight = a;
 }
 
-void BasicTechnique::setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3)
+void BasicTechnique::setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3, GLuint texture4)
 {
 	mvpDepth = mvp;
 	mvpDepth2 = mvp2;
 	texDepth = texture;
 	texDepth2 = texture2;
 	texDepth3 = texture3;
+  texDepth4 = texture4;
 }
 
 void BasicTechnique::bindTexDif(int t)
@@ -152,7 +155,7 @@ void BasicTechnique::bindTexDif(int t)
 	texDifSampler = t;
 }
 
-void BasicTechnique::bindTexDepth(int t, int t2, int t3)
+void BasicTechnique::bindTexDepth(int t, int t2, int t3, int t4)
 {
 	glActiveTexture(GL_TEXTURE0 + t);
 	glBindTexture(GL_TEXTURE_2D, texDepth);
@@ -165,6 +168,9 @@ void BasicTechnique::bindTexDepth(int t, int t2, int t3)
 	glActiveTexture(GL_TEXTURE0 + t3);
 	glBindTexture(GL_TEXTURE_2D, texDepth3);
 	texDepth3Sampler = t3;
+  glActiveTexture(GL_TEXTURE0 + t4);
+  glBindTexture(GL_TEXTURE_2D, texDepth4);
+  texDepth4Sampler = t4;
 }
 
 Mesh *BasicTechnique::getMesh()

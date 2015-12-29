@@ -33,6 +33,7 @@ void ParticleTechnique::init(Mesh &m, int count, GLuint p, GLuint pShaft, GLuint
 	texDepthSamplerUniform = glGetUniformLocation(program, "texDepthSampler");
 	texDepth2SamplerUniform = glGetUniformLocation(program, "texDepth2Sampler");
 	texDepth3SamplerUniform = glGetUniformLocation(program, "texDepth3Sampler");
+  texDepth4SamplerUniform = glGetUniformLocation(program, "texDepth4Sampler");
 	dtUniform = glGetUniformLocation(simulateComputeProgram, "dt");
 	//halfVectorUniform = glGetUniformLocation(simulateComputeProgram, "halfVector");
 	maxParticlesUniform = glGetUniformLocation(simulateComputeProgram, "maxParticles");
@@ -386,6 +387,7 @@ void ParticleTechnique::draw()
 	glUniform1i(texDepthSamplerUniform, texDepthSampler);
 	glUniform1i(texDepth2SamplerUniform, texDepth2Sampler);
 	glUniform1i(texDepth3SamplerUniform, texDepth3Sampler);
+  glUniform1i(texDepth4SamplerUniform, texDepth4Sampler);
 
 	glBindVertexArray(vao);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, vbo[0]);
@@ -454,13 +456,14 @@ void ParticleTechnique::setAmbientLight(const glm::vec3 &a)
 	ambientLight = a;
 }
 
-void ParticleTechnique::setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3)
+void ParticleTechnique::setDepth(const glm::mat4 &mvp, const glm::mat4 &mvp2, GLuint texture, GLuint texture2, GLuint texture3, GLuint texture4)
 {
 	mvpDepth = mvp;
 	mvpDepth2 = mvp2;
 	texDepth = texture;
 	texDepth2 = texture2;
 	texDepth3 = texture3;
+  texDepth4 = texture4;
 }
 
 void ParticleTechnique::bindTexDif(int t)
@@ -470,7 +473,7 @@ void ParticleTechnique::bindTexDif(int t)
 	texDifSampler = t;
 }
 
-void ParticleTechnique::bindTexDepth(int t, int t2, int t3)
+void ParticleTechnique::bindTexDepth(int t, int t2, int t3, int t4)
 {
 	glActiveTexture(GL_TEXTURE0 + t);
 	glBindTexture(GL_TEXTURE_2D, texDepth);
@@ -482,6 +485,9 @@ void ParticleTechnique::bindTexDepth(int t, int t2, int t3)
 	glActiveTexture(GL_TEXTURE0 + t3);
 	glBindTexture(GL_TEXTURE_2D, texDepth3);
 	texDepth3Sampler = t3;
+  glActiveTexture(GL_TEXTURE0 + t4);
+  glBindTexture(GL_TEXTURE_2D, texDepth4);
+  texDepth4Sampler = t4;
 }
 
 Mesh *ParticleTechnique::getMesh()
