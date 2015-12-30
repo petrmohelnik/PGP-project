@@ -23,7 +23,7 @@
 
 
 \title{Zobrazování dýmu simulovaného pomocí èásticového systému}
-\author{Petr Mohelník <xmohel01@stud.fit.vutbr.cz>,\\Tomá¹ Rù¾ièka <xruzic42@stud.fit.vutbr.cz>}
+\author{Petr Mohelník \texttt{xmohel01@stud.fit.vutbr.cz},\\Tomá¹ Rù¾ièka \texttt{xruzic42@stud.fit.vutbr.cz}}
 \date{\today}
 
 
@@ -44,7 +44,7 @@ Tato práce se zamìøuje na realistickou simulaci a zobrazení dýmu pomocí grafické
 V této kapitole je popsána teorie pou¾itá pøi výpoètu a zobrazení dýmu.
 
 \subsection{Simulace}
-Pøístupy pro simulaci kapalin a plynù se dají rozdìlit do dvou kategorií. Jeden je \textit{Eulerùv pøístup}, kde je prostor rozdìlen na fixní 2D nebo 3D møí¾ku. Ka¾dá buòka v møí¾ce obsahuje informace o kapalinì nebo plynu na dané nemìnné pozici. Tyto informace mohou být tlak, hustota, teplota, viskozita aj. Oproti tomu \textit{Lagrangeùv pøístup} vyu¾ívá èástice s promìnlivou pozicí jako nositele informace. Není vázán na fixní møí¾ku a mù¾e se libovolnì rozpínat v prostoru. Na druhou stranu mù¾e být výpoèetnì nároènìj¹í kvùli nutnosti vyhledávání okolních èástic. Tyto pøístupy se nìkdy kombinují.
+Pøístupy pro simulaci kapalin a plynù se dají rozdìlit do dvou kategorií. Jeden je \textit{Eulerùv pøístup}, kde je prostor rozdìlen na fixní 2D nebo 3D møí¾ku. Ka¾dá buòka v møí¾ce obsahuje informace o kapalinì nebo plynu na dané nemìnné pozici. Tyto informace mohou být tlak, hustota, teplota, viskozita aj. Oproti tomu \textit{Lagrangeùv pøístup} vyu¾ívá èástice s promìnlivou pozicí jako nositele informace. Není vázán na fixní møí¾ku a mù¾e se libovolnì rozpínat v prostoru. Na druhou stranu mù¾e být výpoèetnì nároènìj¹í kvùli nutnosti vyhledávat okolní èástice. Tyto pøístupy se nìkdy kombinují.
 
 V tomto projektu jsme zvolili \textit{Lagrangeovu metodu} \cite{Muller} zalo¾enou na \textit{Smoothed Particle Hydrodynamics} (\textit{SPH}), která pro simulaci vyu¾ívá èástice. Øe¹í nestlaèitelnost, symetrii sil, konzervaci hybnosti. \textit{SPH} je interpolaèní metoda. Ka¾dá èástice má prostorovou vzdálenost $h$ urèující, které okolní èástice na ní mají vliv.
 V \textit{SPH} se fyzikální hodnota na pozici $\mathbf{r}$ urèí jako vá¾ená suma fyzikálních hodnot $\phi_j$ sousedních èástic $j$:
@@ -126,11 +126,13 @@ Poté se aktualizuje pozice $\mathbf{r}$:
 Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky. 
 
 \subsection{Øazení}
-Pro správné zobrazování èástic je potøeba øazení. Pro implementaci jsme zvolili Bitonic sort \cite{bitonic_paper}, proto¾e je paralelní a datovì nezávislý a tudí¾ vhodný pro implementaci na GPU. Provádí $O(n\log(n^2))$ porovnání. Algoritmus øadí bitonické sekvence. Bitonická sekvence je sekvence, kde $x_0 \leq \dots \leq x_k \geq \dots \geq x_{n-1}$ pro nìjaké $k, 0 \leq k \leq n$, nebo cyklické posunutí této sekvence. 
+Pro správné zobrazování èástic je potøeba øazení. Pro implementaci jsme zvolili \textit{Bitonic sort} \cite{bitonic_paper}, proto¾e je paralelní a datovì nezávislý a tudí¾ vhodný pro implementaci na GPU. Provádí $O(n\log(n^2))$ porovnání.
 
-Bitonic sort (viz obrázek \ref{fig:bitonic}) provádí $\log n$ iterací, kde výstupem ka¾dého prùchodu je pole tvoøené støídavì rostoucími a klesajícími posloupnostmi o velikosti $2^i$, kde $1 \leq i \leq \log n$ je èíslo iterace. Toho se dosáhne dal¹ími $i$ iteracemi v rámci $i$-té iterace. Ka¾dá tato iterace provádí porovnání mezi prvky s polovièní vzdáleností ne¾ ta pøedchozí (viz obrázek \ref{fig:bitonic}). Nakonec vznikne jedna rostoucí nebo klesající posloupnost.
+ Algoritmus øadí \textit{bitonické sekvence}. Bitonická sekvence je sekvence, kde $x_0 \leq \dots \leq x_k \geq \dots \geq x_{n-1}$ pro nìjaké $k, 0 \leq k \leq n$, nebo cyklické posunutí této sekvence. 
 
-Takto funguje bitonic sort pro posloupnosti délky mocniny 2. Triviální øe¹ení pro libovolné délky posloupnosti by bylo na konec uva¾ovat prvky maximální (resp. minimální) hodnoty. Proto¾e bitonic sort øadí prvky v sekvencích o støídajícíh se smìrech (rostoucí nebo klesající), tyto prvky by byly pøesouvány a musely by tedy fyzicky existovat. 
+Bitonic sort (viz obrázek \ref{fig:bitonic}) provádí $\log n$ iterací, kde výstupem ka¾dého prùchodu je pole tvoøené støídavì rostoucími a klesajícími posloupnostmi o velikosti $2^i$, kde $1 \leq i \leq \log n$ je èíslo iterace. Toho se dosáhne dal¹ími $i$ iteracemi v rámci $i$-té iterace. Ka¾dá tato vnitøní iterace provádí porovnání mezi prvky s polovièní vzdáleností ne¾ ta pøedchozí (viz obrázek \ref{fig:bitonic}). Nakonec vznikne jedna rostoucí nebo klesající posloupnost.
+
+Takto funguje bitonic sort pro posloupnosti délky mocniny 2. Triviální øe¹ení pro libovolné délky posloupnosti by bylo na konci uva¾ovat prvky maximální (resp. minimální) hodnoty. Proto¾e bitonic sort øadí prvky v sekvencích o støídajícíh se smìrech (rostoucí nebo klesající), tyto prvky by byly pøesouvány a musely by tedy fyzicky existovat. 
 
 Nicménì v bitonic sortu není podstatné zda jsou sekvence øazeny jako rostoucí/klesající nebo naopak. Proto mù¾e být øazení upraveno tak, aby v ka¾dé iteraci $i$ byla na konci rostoucí (resp. klesající) sekvence a tím hodnoty nebudou nikdy pøesouvány a tudí¾ nemusí existovat.
 
@@ -163,27 +165,33 @@ Pøi stínování je pak vyu¾it výsledek \textit{light bufferu} spolu se \textit{stí
 Pro implementaci jsme pou¾ili \textit{OpenGL} ve verzi {\ttfamily 4.3}. K simulaci dýmu byly vyu¾ity \textit{compute shadery} spolu s \textit{shader storage} buffery. V èásti stínovány zaji¹»ovaly \textit{framebuffery} záznam do textur.
 
 \subsection{Simulace}
-Pro simulaci je zavedeno nìkolik  shader storage buffer object (SSBO), v¹echny mají velikost maximálního poètu èástic v systému.
-
-Základní buffer je ParticlePool, který slou¾í pro ulo¾ení èástic. Ká¾dá èástice má ulo¾ených 12 floatù: pozici, rychlost, sílu, hustotu, tlak a èas ¾ivota. 
-
-Dal¹í je DeadList, který obsahuje indexy do ParticlePool s èásticemi, které jsou volné k pou¾ití. K tomu se pou¾ívá atomický èítaè, urèující pozici od které vpravo jsou volné indexy.
-
-SortList slou¾í k seøazení èástic. Pro ka¾dou èástici obsahuje klíè a index do ParticlePool. Vyu¾ívá atomický èítaè urèující poèet èástic, které se budou zobrazovat, tedy øadit.
-
-U simulace je nutné procházet okolní èástice. Pokud nechceme provádìt $n^2$ porovnání, musíme to nìjak øe¹it. Pou¾íváme uniformní møí¾ku zalo¾enou na øazení, jak je nastínìno v \cite{grid}. Tato møí¾ka omezuje pohyb èástic pouze do prostoru pokrytého møízkou. Pro neomezený pohyb èástic se dají pou¾ít hashovací metody, ale ty mohou být pomalej¹í, proto¾e do sousedních oblasti mapují èástice, které sousední nejsou. Tato møí¾ka se vytváøí ka¾dý snímek znovu. Pro ka¾dou èástici se urèí do jaké buòky spadá. Index této buòky se pou¾ije jako klíè pro øazení. Po seøazení èástic jsou zji¹tìny a ulo¾eny poèáteèní indexy pro ka¾dou buòku. Pøi procházení okolních èástic se prochází $3 \times 3 \times 3 = 27$  okolních bunìk pro ka¾dou èástici. Podporuje neomezené mno¾ství èástic v buòce a díky seøazení urychluje pøístupy do pamìti pro okolní èástice. K tomu jsou zavedeny dal¹í dva SSBO. GridList obsahuje index do ParticlePool a index buòky jako klíè pro øazení. Vyu¾ívá atomický èítaè urèující poèet èástic aktuálnì v oblasti møí¾ky. StarIndexList obsahuje pro ka¾dou buòku její poèáteèní index v GridList.
+Pro simulaci je zavedeno nìkolik  shader storage buffer objectù (SSBO), v¹echny mají velikost maximálního poètu èástic v systému. Pro vytvoøení základní struktury èásticového systému jsme se inspirovali ve slajdech z pøedná¹ky \cite{thomas}.
 
 \vspace*{1\baselineskip}
 
-V programu je pou¾ito mno¾ství compute shaderu. Popí¹eme si je v poøadí v jakém se volají.
+Základní buffer je {\tt ParticlePool}, který slou¾í pro ulo¾ení èástic. Ká¾dá èástice má ulo¾ených 12 floatù: pozici, rychlost, sílu, hustotu, tlak a èas ¾ivota. 
 
-emit\_particle generuje malé mno¾ství èástic v èasových intervalech. Vytáhne si z DeadListu èástici a nastaví ji pozici, rychlost a èas ¾ivota.
+Dal¹í je {\tt DeadList}, který obsahuje indexy do {\tt ParticlePool} s èásticemi, které jsou volné k pou¾ití. K tomu se pou¾ívá atomický èítaè, urèující pozici od které vpravo jsou volné indexy.
 
-grid\_particle\_divide pro ka¾dou èástici urèí index buòky do které spadá, pokud do ¾ádné nespadá, èástice je vrácena do DeadListu. Dále jsou èástice seøazeny (øazení bude popsáno dále) a v compute shaderu grid\_particle\_find\_start jsou vyhledány poèáteèní indexy bunìk a èástice z ParticlePool jsou zkopírovány do ParticlePoolSorted v seøazeném poøadí. To by mìlo urychlit pøístup do pamìti pøi procházení okolních èástic, díky blízkosti èástic z jedné buòce v pamìti. Velikost bunìk je shodná s prùmìrem $h$ vyhlazovacího kernelu. Tím je zaji¹tìno, ¾e v¹echny èástice spadající do jeho vlivu budou v nìkteré  z 27 okolních bunìk.
+{\tt SortList} slou¾í k seøazení èástic. Pro ka¾dou èástici obsahuje klíè a index do {\tt ParticlePool}. Vyu¾ívá atomický èítaè urèující poèet èástic, které se budou zobrazovat, tedy øadit.
 
-Nyní pøichází na øadu samotná simulace. simulate\_particle\_density prochází pro ka¾dou èástici 27 bunìk møí¾ky a v ka¾dé v¹echny èástice, s tìmi potom vypoèítá hustotu za vyu¾ití vyhlazovací funkce podle rovnice \ref{density}. Kvùli velkému mno¾ství pøístupù do globální pamìti má tento krok velký vliv na celkovou rychlost. simulate\_particle\_pressure vypoèítá tlak podle rovnice \ref{pressure_3} v závislosti na hustotì spoèítané v pøedchozím kroku. Následuje  simulate\_particle\_force, který poèítá vnitøí sílu pùsobící na èástici. Prochází okolní èástice obdobnì jako pøi výpoètu hustoty. Vyu¾ívá ale jiné dva vyhlazovací kernely a poèítá rovnice \ref{pressure_2} a \ref{viscosity_2}. Simulaci ukonèuje simulate\_particle. Ten pro ka¾dou èástici dekremetuje èas ¾ivota a pokud je èas záporný, vrátí ji do DeadListu. Poté se urèí vztlaková síla z rovnice \ref{buoyancy} a urèí se vliv jednoduchého vìtru. Následuje integrace v èase podle \ref{velocity} a \ref{pos}. Nakonec se zkontrolují kolize s koulemi a krychlí, ve které je dým uzavøen. Pøi kolizi jsou èástice odra¾eny. Èástice z ParticlePoolSorted jsou zkopírovány zpìt do ParticlePool.
+U simulace je nutné procházet okolní èástice. Pokud nechceme provádìt $n^2$ porovnání, musíme to nìjak øe¹it. Pou¾íváme uniformní møí¾ku zalo¾enou na øazení, jak je nastínìno v \cite{grid}. Tato møí¾ka omezuje pohyb èástic pouze do prostoru pokrytého møízkou. Pro neomezený pohyb èástic se dají pou¾ít hashovací metody, ale ty mohou být pomalej¹í, proto¾e do sousedních oblasti mapují èástice, které sousední nejsou. Tato møí¾ka se vytváøí ka¾dý snímek znovu. Pro ka¾dou èástici se urèí do jaké buòky spadá. Index této buòky se pou¾ije jako klíè pro øazení. Po seøazení èástic jsou zji¹tìny a ulo¾eny poèáteèní indexy pro ka¾dou buòku. Pøi procházení okolních èástic se prochází $3 \times 3 \times 3 = 27$  okolních bunìk pro ka¾dou èástici. Podporuje neomezené mno¾ství èástic v buòce a díky seøazení urychluje pøístupy do pamìti pro okolní èástice. K tomu jsou zavedeny dal¹í dva SSBO. {\tt GridList} obsahuje index do {\tt ParticlePool} a index buòky jako klíè pro øazení. Vyu¾ívá atomický èítaè urèující poèet èástic aktuálnì v oblasti møí¾ky. {\tt StartIndexList} obsahuje pro ka¾dou buòku její poèáteèní index v {\tt GridList}.
 
-Následnì jsou èástice øazeny pro vykreslení, viz kapitola \ref{vykres}. Pro øazení jsou pou¾ity celkem tøi compute shadery. sort\_particle\_local je první v poøadí. Tento shader slou¾í pro urychlení vyu¾itím lokální pamìti. V rámci ka¾dé pracovní skupiny jsou hodnoty klíè a index nakopírovány do lokální pamìti a poté je provádìno øazení dokud velikost seøazených podsekvencí není velikost pracovní skupiny. Pro na¹í velikost skupiny 512 se pro ka¾dé vlákno bude provádìt 44 porovnání dvojic. Následuje sort\_particle, který vyu¾ívá globální pamìti a registrù, neobsahuje ¾ádné cykly, ty jsou na stranì CPU. V rámci jednoho volání provede porovnání odpovídající 1, 2, 3 nebo 4 vnitøním cyklùm. Na obrázku \ref{bitonic2} je vidìt pøíklad porovnání, která se dají provést v rámci jednoho vlákna. Hodnoty se kterými se bude pracovat se na zaèátku ulo¾í do registrù, poté se provedou v¹echna porovnání a nakonec se ulo¾í zpìt do globální pamìti. Tento shader se volá, dokud vzdálenost porovnávaných hodnot je vìt¹í ne¾ velikost pracovní skupiny. Poté se volá sort\_particle\_local\_inner který dokonèí vnitøní smyèku vyu¾itím lokální pamìti i registrù. Funguje obdobnì jako sort\_particle, ale obsahuje vnitøní smyèku a hodnoty jsou na zaèátku ulo¾eny z globální do lokální pamìti. Celkem je øazení v rámci jednoho snímku provedeno 3x.
+\vspace*{1\baselineskip}
+
+V programu je pou¾ito mno¾ství compute shaderu. Popí¹eme si je v poøadí v jakém jsou volány.
+
+{\tt emit\_particle} generuje malé mno¾ství èástic v èasových intervalech. Vytáhne si z {\tt DeadListu} èástici a nastaví ji pozici, rychlost a èas ¾ivota.
+
+{\tt grid\_particle\_divide} pro ka¾dou èástici urèí index buòky do které spadá, pokud do ¾ádné nespadá, èástice je vrácena do {\tt DeadListu}. Dále jsou èástice seøazeny (øazení bude popsáno dále) a v compute shaderu {\tt grid\_par\-ticle\_find\_start} jsou vyhledány poèáteèní indexy bunìk a èástice z {\tt Parti\-clePool} jsou zkopírovány do {\tt Parti\-clePoolSorted} v seøazeném poøadí. To by mìlo urychlit pøístup do pamìti pøi procházení okolních èástic, díky blízkosti èástic z jedné buòky v pamìti. Velikost bunìk je shodná s prùmìrem $h$ vyhlazovacího kernelu. Tím je zaji¹tìno, ¾e v¹echny èástice spadající do jeho vlivu budou v nìkteré z 27 okolních bunìk.
+
+\vspace*{1\baselineskip}
+
+Nyní pøichází na øadu samotná simulace. {\tt simulate\_particle\_density} prochází pro ka¾dou èástici 27 bunìk møí¾ky a v ka¾dé v¹echny èástice. S tìmi potom vypoèítá hustotu za vyu¾ití vyhlazovací funkce podle rovnice \ref{density}. Kvùli velkému mno¾ství pøístupù do globální pamìti má tento krok velký vliv na celkovou rychlost. {\tt simulate\_particle\_pressure} vypoèítá tlak podle rovnice \ref{pressure_3} v závislosti na hustotì spoèítané v pøedchozím kroku. Následuje  {\tt simulate\_particle\_force}, který poèítá vnitøí sílu pùsobící na èástici. Prochází okolní èástice obdobnì jako pøi výpoètu hustoty. Vyu¾ívá ale jiné dva vyhlazovací kernely a poèítá rovnice \ref{pressure_2} a \ref{viscosity_2}. Simulaci ukonèuje {\tt simulate\_par\-ti\-cle}. Ten pro ka¾dou èástici dekremetuje èas ¾ivota a pokud je èas záporný, vrátí ji do {\tt DeadListu}. Poté se urèí vztlaková síla z rovnice \ref{buoyancy} a urèí se síla jednoduchého vìtru, který jsme zavedli pro rozhýbání èástic. Následuje integrace v èase podle \ref{velocity} a \ref{pos}. Nakonec se zkontrolují kolize s koulemi a krychlí, ve které je dým uzavøen. Pøi kolizi jsou èástice odra¾eny. Èástice z {\tt ParticlePoolSorted} jsou zkopírovány zpìt do {\tt ParticlePool}.
+
+\vspace*{1\baselineskip}
+
+Následnì jsou èástice øazeny pro vykreslení, viz kapitola \ref{vykres}. Pro øazení jsou pou¾ity celkem tøi compute shadery. {\tt sort\_particle\_local} je první v poøadí. Tento shader slou¾í pro urychlení øazení vyu¾itím lokální pamìti. V rámci ka¾dé pracovní skupiny jsou hodnoty klíè a index nakopírovány do lokální pamìti a poté je provádìno øazení dokud velikost seøazených podsekvencí není velikost pracovní skupiny. Pro na¹í velikost skupiny 512 se pro ka¾dé vlákno bude provádìt 44 porovnání dvojic. Následuje {\tt sort\_particle}, který vyu¾ívá globální pamìti a registrù, neobsahuje ¾ádné cykly, ty jsou na stranì CPU. V rámci jednoho volání provede porovnání odpovídající 1, 2, 3 nebo 4 vnitøním cyklùm. Na obrázku \ref{bitonic2} je vidìt pøíklad porovnání, která se dají provést v rámci jednoho vlákna. Hodnoty se kterými se bude pracovat se na zaèátku ulo¾í do registrù, poté se provedou v¹echna porovnání a nakonec se ulo¾í zpìt do globální pamìti. Tento shader se volá, dokud vzdálenost porovnávaných hodnot je vìt¹í ne¾ velikost pracovní skupiny. Poté se volá {\tt sort\_particle\_local\_inner} který dokonèí vnitøní smyèku vyu¾itím lokální pamìti i registrù. Funguje obdobnì jako sort\_particle, ale obsahuje cyklus a hodnoty jsou na zaèátku ulo¾eny z globální do lokální pamìti. Celkem je øazení v rámci jednoho snímku provedeno 3x.
 
 \begin{figure}[htb]
   \centering
@@ -193,25 +201,27 @@ Následnì jsou èástice øazeny pro vykreslení, viz kapitola \ref{vykres}. Pro øaze
 \end{figure} 
 
 
-Klidovou hustotu $\rho_0$ uva¾ujeme $0.59$ a hmotnost $m$ jedné èástice $0.00005$. Radius $h = 0.06$ je urèen, aby do nìj spadalo asi 12 èástic, dále $k = 4$, $\mu = 0.01$ a $b = 5$. Tyto hodnoty jsou pøevzaty z \cite{kelager06}, kde jsou urèeny pomocí fyzikálních vztahù pro objem, hustotu, hmotnost aj. Hodnota $k$ není fyzikálnì pøesná, proto¾e by simulace dobøe nefungovala s tak velikou hodnotou. To jak dobøe tato hodnota bude fungovat je závislé na mno¾ství èástic.  
+\vspace*{1\baselineskip}
+
+Klidovou hustotu $\rho_0$ uva¾ujeme $0.59 (\frac{kg}{m^3})$ a hmotnost $m$ jedné èástice $5 \times 10^{-5}(kg)$. Radius $h = 0.06 (m)$ je urèen, aby do nìj spadalo asi 12 èástic, dále $k = 4 (J)$, $\mu = 0.01 (Pa \cdot s)$ a $b = 5$. Tyto hodnoty jsou pøevzaty z \cite{kelager06}, kde jsou urèeny pomocí fyzikálních vztahù pro objem, hustotu, hmotnost aj. Hodnota $k$ není fyzikálnì pøesná, proto¾e by simulace dobøe nefungovala s tak velikou hodnotou. To jak dobøe tato hodnota bude fungovat je závislé na mno¾ství èástic v simulaci.  
 
 \subsection{Vykreslení} \label{vykres}
 Pøi vykreslování byla pou¾ita metoda seøazení øezù dýmu pomocí \textit{half vektoru}, nicménì nepodaøil se nám správnì nastavit re¾im míchání barev. Z toho dùvodu byl dým po simulaci øazen dvakrát, a to pro pohled z pozice svìtla a z pozice kamery.
 
-Pøi vykreslování z pozice kamery byly nejprve vykreslovány neprùhledné objekty scény do \textit{hloubkové mapy}. Poté byl vykreslován dým do \textit{light bufferu} a také do \textit{hloubkové mapy}. \textit{Light buffer} zde pøedstavuje klasickou texturu, do které je ukládán svìtelný pøízpìvek, který pøedstavují èástice dýmu.
+Pøi vykreslování z pozice kamery byly nejprve vykreslovány neprùhledné objekty scény do \textit{hloubkové mapy}. Poté byl vykreslován dým do \textit{light bufferu} a také do \textit{hloubkové mapy}. \textit{Light buffer} zde pøedstavuje klasickou texturu, do které je ukládán svìtelný pøíspìvek, který pøedstavují èástice dýmu.
 
-Dal¹ím krokem pøi vykreslování je vytvoøení efektu pro paprsky slunce (\textit{sun shafts}). Nejprve je potøeba vykreslit do \textit{framebufferu} scénu z pozice kamery, pøièem¾ scéna je specificky obarvená. Objekt slunce má bílou barvu, pozadí tmavì modrou a ostatní objekty vèetnì dýmu je vykreslen s èernou barvou. Pro dal¹í postup je pak vypoètena projekce pozice svìtla na projekèní plátno. Pomocí této pozice je v dal¹ím kroku vykreslen pouze ètverec s texturou výsledku z pøedchozího kroku. Pøi tomto kreslení je výstup rozmazán ve smìru od pozice svìtla\,--\,tedy ve shaderu pro ka¾dý pixel ve smìru ke svìtlu. Tento výsledek je nakonec skombinován s klasickým kreslením scény pomocí \textit{additivního míchání} (obr. \ref{fig:shafts}).
+Dal¹ím krokem pøi vykreslování je vytvoøení efektu pro paprsky slunce (\textit{sun shafts}). Nejprve je potøeba vykreslit do \textit{framebufferu} scénu z pozice kamery, pøièem¾ scéna je specificky obarvená. Objekt slunce má bílou barvu, pozadí tmavì modrou a ostatní objekty vèetnì dýmu je vykreslen s èernou barvou. Pro dal¹í postup je pak vypoètena projekce pozice svìtla na projekèní plátno. Pomocí této pozice je v dal¹ím kroku vykreslen pouze ètverec s texturou výsledku z pøedchozího kroku. Pøi tomto kreslení je výstup rozmazán ve smìru od pozice svìtla\,--\,tedy ve shaderu pro ka¾dý pixel ve smìru ke svìtlu. Tento výsledek je nakonec zkombinován s klasickým kreslením scény pomocí \textit{aditivního míchání} (obr. \ref{fig:shafts}).
 
 \begin{figure}[htb]
   \centering
   \includegraphics[width=13cm,keepaspectratio]{fig/shafts.jpg}
-  \caption{Postup vytvoøení efetu paprskù slunce. Vlevo: vykreslení scény ve speciálních barvách. Uprostøed: rozmazání textury. Vpravo: Additivnì smíchané s výstupem.}
+  \caption{Postup vytvoøení efektu paprskù slunce. Vlevo: vykreslení scény ve speciálních barvách. Uprostøed: rozmazání textury. Vpravo: Additivnì smíchané s výstupem.}
   \label{fig:shafts}
 \end{figure}
 
 Pøi standardním vykreslování scény z pozice kamery jsou nejprve kresleny neprùhledné objekty. Pro nì jsou vyu¾ity \textit{stínové mapy} a \textit{akumulaèní buffer} (\textit{light}) z pøedchozích krokù. \textit{Stínové mapy} (\textit{hloubkové}) jsou klasicky pou¾ity s \textit{shadow samplerem} a s projektivním dotazováním se na zastínìní. Dále je vyu¾it \textit{light buffer} stejným zpùsobem pro urèení prùsvitnosti dýmu. Tento postup je dál kombinován se \textit{stínovou mapou} dýmu, pro oøíznutí zastínìní pro bli¾¹í pøedmìty ke svìtlu.
 
-Pøi stínování èástic dýmu je také vyu¾ity \textit{stínové mapy} pøedmetù a dýmu stejným zpùsobem. Pro urèení prùsvitnosti v dýmu pro èástice, které nele¾í pøímo na svìtle, ale jsou zastínìny jinými èásticemi se vyu¾ívá kombinace \textit{stínové mapy} dýmu a \textit{light bufferu}. Tato stínová mapa je v¹ak pou¾ita jako \textit{hloubková mapa}, pomocí které, spolu s hloubkou fragmentu je urèen rozdíl hloubky. Ten je vyu¾it k výpoètu míry zastínìní.
+Pøi stínování èástic dýmu je také vyu¾ity \textit{stínové mapy} pøedmìtù a dýmu stejným zpùsobem. Pro urèení prùsvitnosti v dýmu pro èástice, které nele¾í pøímo na svìtle, ale jsou zastínìny jinými èásticemi se vyu¾ívá kombinace \textit{stínové mapy} dýmu a \textit{light bufferu}. Tato stínová mapa je v¹ak pou¾ita jako \textit{hloubková mapa}, pomocí které, spolu s hloubkou fragmentu je urèen rozdíl hloubky. Ten je vyu¾it k výpoètu míry zastínìní.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -221,7 +231,7 @@ Simulace vy¾aduje pomìrnì malé kroky $\Delta t$. Ve výsledné aplikaci jsme zvoli
 
 Simulace tedy nebì¾í v reálném èase pokud není dostatek fps. To ale je bì¾né napø. ve hrách, ¾e fyzikální simulace jsou pomalej¹í.
 
-Aèkoliv se SPH pou¾ívá pøevá¾nì pro simulaci tekutin, podaøilo se nám dosáhnout zajímavých výsledkù i pro dým. Ale existují i nìjaké hry, které pou¾ívají SPH pro simulaci kouøe (viz http://physxinfo.com/news/11443/gpu-physx-in-metro-last-light/). Tedy i na¹e simulace by mohla být pou¾itá tøeba v nìjaké høe, kdy¾ by se vhodnì nastavily parametry a rozlo¾ily poèáteèní èástice.
+Aèkoliv se SPH pou¾ívá pøevá¾nì pro simulaci tekutin, podaøilo se nám dosáhnout zajímavých výsledkù i pro dým. Ale existují i nìjaké hry, které pou¾ívají SPH pro simulaci kouøe (viz \cite{metro}). Tedy i na¹e simulace by mohla být pou¾itá tøeba v nìjaké høe, kdy¾ by se vhodnì nastavily parametry a rozlo¾ily poèáteèní èástice.
 
 Obr. \ref{fig:app00} \ref{fig:app01} \ref{fig:app02} \ref{fig:app03}.
 
@@ -232,7 +242,7 @@ Obr. \ref{fig:app00} \ref{fig:app01} \ref{fig:app02} \ref{fig:app03}.
 Tady by mìlo být struènì napsané jak to funguje.
 
 
-\bibliographystyle{alpha}
+\bibliographystyle{IEEEtran}
 \begin{flushleft}
   \bibliography{project}
 \end{flushleft}
