@@ -151,6 +151,7 @@ public:
 		  GLuint sortLocalInnerComputeP, GLuint gridDivideComputeP, GLuint gridFindStartComputeP,
 		  GLuint simulateDensityComputeP, GLuint simulatePressureComputeP, GLuint simulateForceComputeP);
 	void simulate();
+	int getNumParticles();
 	virtual void draw();
 	virtual void drawShafts();
 	void sort(GLuint sortCounter, GLuint buffer);

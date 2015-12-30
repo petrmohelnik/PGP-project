@@ -81,7 +81,7 @@ Tlak $p_i$ se urèí pomocí modifikované rovnice ideálního plynu:
   \label{pressure_3}
   p_i = k (\rho - \rho_0)
 \end{equation}
-kde $\rho_0$ je klidová hustota.
+kde $\rho_0$ je klidová hustota a $k$ je tuhost plynu.
 
 \vspace*{1\baselineskip}
 
@@ -193,6 +193,8 @@ Následnì jsou èástice øazeny pro vykreslení, viz kapitola \ref{vykres}. Pro øaze
 \end{figure} 
 
 
+Klidovou hustotu $\rho_0$ uva¾ujeme $0.59$ a hmotnost $m$ jedné èástice $0.00005$. Radius $h = 0.06$ je urèen, aby do nìj spadalo asi 12 èástic, dále $k = 4$, $\mu = 0.01$ a $b = 5$. Tyto hodnoty jsou pøevzaty z \cite{kelager06}, kde jsou urèeny pomocí fyzikálních vztahù pro objem, hustotu, hmotnost aj. Hodnota $k$ není fyzikálnì pøesná, proto¾e by simulace dobøe nefungovala s tak velikou hodnotou. To jak dobøe tato hodnota bude fungovat je závislé na mno¾ství èástic.  
+
 \subsection{Vykreslení} \label{vykres}
 Pøi vykreslování byla pou¾ita metoda seøazení øezù dýmu pomocí \textit{half vektoru}, nicménì nepodaøil se nám správnì nastavit re¾im míchání barev. Z toho dùvodu byl dým po simulaci øazen dvakrát, a to pro pohled z pozice svìtla a z pozice kamery.
 
@@ -215,9 +217,11 @@ Pøi stínování èástic dýmu je také vyu¾ity \textit{stínové mapy} pøedmetù a dýmu 
 
 \section{Vyhodnocení}
 
-Tady by mìlo být napsané jak to funguje. Proto¾e se jedná o poèítaèovou grafiku nebo
-vidìní, tak by tady mìl byt screenshot, ze ktereho bude poznat jak to funguje.
-K tomu by mìla být idealnì tabulka s vyhodnocením jak pøesnì/rychle to funguje.
+Simulace vy¾aduje pomìrnì malé kroky $\Delta t$. Ve výsledné aplikaci jsme zvolili $\Delta t = 0.005s$ jako maximum, které se pou¾ije pokud èas mezi snímky je vìt¹í. Simulace je¹tì docela funguje pro $\Delta t = 0.01s$. U vìt¹ích krokù se simulace rozkmitá, èástice budou vystøelovány velkou silou a osamostatòovány. Osamostatnìní èástice je velký problém, který by ideálnì nemìl nikdy nastat. Je-li èástice samostatná hustota ze vztahu \ref{density} je nulová a proto¾e se touto hustotou v dal¹ích výpoètech dìlí, nastává problém. V na¹í aplikaci se v takovém pøípadì o¹etøuje aby nedo¹lo k dìlení nulou a v dal¹ím kroku jsou takové èástice zabity. Dal¹í problémy mohou nastat napø. pøi emitaci èástic. Vygenerují-li se èástice pøíli¹ blízko, jsou od sebe odpuzovány pøíli¹ velkou silou a simulace se rozpadne. Jsou-li naopak pøíli¹ daleko, pøitahují se k sobì a tvoøí malé shluky èástic.
+
+Simulace tedy nebì¾í v reálném èase pokud není dostatek fps. To ale je bì¾né napø. ve hrách, ¾e fyzikální simulace jsou pomalej¹í.
+
+Aèkoliv se SPH pou¾ívá pøevá¾nì pro simulaci tekutin, podaøilo se nám dosáhnout zajímavých výsledkù i pro dým. Ale existují i nìjaké hry, které pou¾ívají SPH pro simulaci kouøe (viz http://physxinfo.com/news/11443/gpu-physx-in-metro-last-light/). Tedy i na¹e simulace by mohla být pou¾itá tøeba v nìjaké høe, kdy¾ by se vhodnì nastavily parametry a rozlo¾ily poèáteèní èástice.
 
 Obr. \ref{fig:app00} \ref{fig:app01} \ref{fig:app02} \ref{fig:app03}.
 

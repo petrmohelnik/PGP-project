@@ -81,6 +81,7 @@ public:
 	void render(Uint32 dt);
 	void addParticleSystem(std::shared_ptr<ParticleSystemRenderer> o);
 	void setShaftPrograms(GLuint s, GLuint sOut);
+	int getNumParticles();
 };
 
 #endif //SCENE_H

@@ -14,6 +14,7 @@ private:
 	int width, height;
 	Uint32 lastTics;
 	Uint32 lastFPS;
+	Uint32 prevNumParticles = 0;
 public:
 	SDLHandler(int w, int h);
 	bool init();

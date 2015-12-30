@@ -359,6 +359,11 @@ void ParticleTechnique::sortParticles()
 	sort(sortCounter, vbo[1]);
 }
 
+int ParticleTechnique::getNumParticles()
+{
+	return sortCounter;
+}
+
 void ParticleTechnique::draw()
 {
 	//vykresleni

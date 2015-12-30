@@ -22,6 +22,7 @@ public:
 	void renderShafts(Camera &cam, int dt);
 	void simulate(int dt);
 	void sort(Camera &cam, const std::vector<Light> &lights);
+	int getNumParticles();
 
 	void *getTechnique();
 };

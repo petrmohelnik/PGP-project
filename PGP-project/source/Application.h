@@ -17,6 +17,7 @@ public:
 	std::shared_ptr<Scene> getScene(const char *name);
 	void display(Uint32 dt);
 	void sdlEvent(SDL_Event &event);
+	int getNumParticles();
 };
 
 #endif //APPLICATION_H

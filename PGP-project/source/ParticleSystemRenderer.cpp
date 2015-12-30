@@ -92,3 +92,8 @@ void *ParticleSystemRenderer::getTechnique()
 {
 	return technique.get();
 }
+
+int ParticleSystemRenderer::getNumParticles()
+{
+	return technique->getNumParticles();
+}

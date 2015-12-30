@@ -33,6 +33,11 @@ void Application::display(Uint32 dt)
 	activeScene->render(dt);
 }
 
+int Application::getNumParticles()
+{
+	return ((MainScene*)(activeScene.get()))->getNumParticles();
+}
+
 void Application::sdlEvent(SDL_Event &event)
 {
 	activeScene->handleSdlEvent(event);

@@ -71,15 +71,16 @@ void SDLHandler::mainLoop(Application &app)
 		Uint32 fps = static_cast<Uint32>((1.0f / static_cast<float>(dt) * 1000.0f));
 		if ((fps < (lastFPS - 5)) || (fps >(lastFPS + 5))) // rozsah pro odstraneni blikani textu
 		{
-			std::stringstream ss;
-			ss << "Smoke, FPS: " << fps;
-			SDL_SetWindowTitle(mainwindow, ss.str().c_str());
 			lastFPS = fps;
 		}
+		std::stringstream ss;
+		ss << "Smoke, FPS: " << lastFPS << ", Particles: " << prevNumParticles;
+		SDL_SetWindowTitle(mainwindow, ss.str().c_str());
 
 		lastTics = tics;
 
 		app.display(dt);
+		prevNumParticles = app.getNumParticles();
 		SDL_GL_SwapWindow(mainwindow);
 	}
 

@@ -452,3 +452,8 @@ void MainScene::render(Uint32 dt)
 		glDisable(GL_TEXTURE_2D);
 	}*/
 }
+
+int MainScene::getNumParticles()
+{
+	return particleSystem->getNumParticles();
+}
