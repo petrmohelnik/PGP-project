@@ -69,12 +69,12 @@ kde $\mathbf{f}_i$ se spoèítá jako $\mathbf{f}_i = \mathbf{f}_i^{viscosity} + \m
 Tlaková síla $\mathbf{f}_i^{pressure}$ je ze vztahu \ref{basic} urèena:
 \begin{equation}
   \label{pressure_1}
-  \mathbf{f}_i^{pressure} = \sum_{j} m_j \frac{p_j}{\rho_j} \nabla W(\mathbf{r}_i - \mathbf{r}_j,h)
+  \mathbf{f}_i^{pressure} = -\sum_{j} m_j \frac{p_j}{\rho_j} \nabla W(\mathbf{r}_i - \mathbf{r}_j,h)
 \end{equation}
 Bohu¾el tato síla není symetrická, jak mù¾e být vidìt pøi interakci pouze dvou èástic. Gradient je nula uprostøed, proto èástice $i$ vyu¾ívá pouze tlak èástice $j$ pro výpoèet síly a naopak. Tlak v lokacích dvou rùzných èástic není shodný. Tlaková síla je symetrizována následovnì (mohou být i jiné tvary rovnice pro symetrizaci):
 \begin{equation}
   \label{pressure_2}
-  \mathbf{f}_i^{pressure} = \sum_{j} m_j \frac{p_i + p_j}{2\rho_j} \nabla W(\mathbf{r}_i - \mathbf{r}_j,h)
+  \mathbf{f}_i^{pressure} = -\sum_{j} m_j \frac{p_i + p_j}{2\rho_j} \nabla W(\mathbf{r}_i - \mathbf{r}_j,h)
 \end{equation}
 Tlak $p_i$ se urèí pomocí modifikované rovnice ideálního plynu:
 \begin{equation}
@@ -181,10 +181,19 @@ emit\_particle generuje malé mno¾ství èástic v èasových intervalech. Vytáhne si 
 
 grid\_particle\_divide pro ka¾dou èástici urèí index buòky do které spadá, pokud do ¾ádné nespadá, èástice je vrácena do DeadListu. Dále jsou èástice seøazeny (øazení bude popsáno dále) a v compute shaderu grid\_particle\_find\_start jsou vyhledány poèáteèní indexy bunìk a èástice z ParticlePool jsou zkopírovány do ParticlePoolSorted v seøazeném poøadí. To by mìlo urychlit pøístup do pamìti pøi procházení okolních èástic, díky blízkosti èástic z jedné buòce v pamìti. Velikost bunìk je shodná s prùmìrem $h$ vyhlazovacího kernelu. Tím je zaji¹tìno, ¾e v¹echny èástice spadající do jeho vlivu budou v nìkteré  z 27 okolních bunìk.
 
-Nyní pøichází na øadu samotná simulace. simulate\_particle\_density prochází pro ka¾dou èástici 27 bunìk møí¾ky a v ka¾dé v¹echny èástice, s tìmi potom vypoèítá hustotu za vyu¾ití vyhlazovací funkce podle rovnice \ref{density}. Kvùli velkému mno¾ství pøístupù do globální pamìti je tento velmi pomalý s velkým vlivem na celkovou rychlost. simulate\_particle\_pressure vypoèítá tlak podle rovnice \ref{pressure_3} v závislosti na hustotì spoèítané v pøedchozím kroku.
+Nyní pøichází na øadu samotná simulace. simulate\_particle\_density prochází pro ka¾dou èástici 27 bunìk møí¾ky a v ka¾dé v¹echny èástice, s tìmi potom vypoèítá hustotu za vyu¾ití vyhlazovací funkce podle rovnice \ref{density}. Kvùli velkému mno¾ství pøístupù do globální pamìti má tento krok velký vliv na celkovou rychlost. simulate\_particle\_pressure vypoèítá tlak podle rovnice \ref{pressure_3} v závislosti na hustotì spoèítané v pøedchozím kroku. Následuje  simulate\_particle\_force, který poèítá vnitøí sílu pùsobící na èástici. Prochází okolní èástice obdobnì jako pøi výpoètu hustoty. Vyu¾ívá ale jiné dva vyhlazovací kernely a poèítá rovnice \ref{pressure_2} a \ref{viscosity_2}. Simulaci ukonèuje simulate\_particle. Ten pro ka¾dou èástici dekremetuje èas ¾ivota a pokud je èas záporný, vrátí ji do DeadListu. Poté se urèí vztlaková síla z rovnice \ref{buoyancy} a urèí se vliv jednoduchého vìtru. Následuje integrace v èase podle \ref{velocity} a \ref{pos}. Nakonec se zkontrolují kolize s koulemi a krychlí, ve které je dým uzavøen. Pøi kolizi jsou èástice odra¾eny. Èástice z ParticlePoolSorted jsou zkopírovány zpìt do ParticlePool.
+
+Následnì jsou èástice øazeny pro vykreslení, viz kapitola \ref{vykres}. Pro øazení jsou pou¾ity celkem tøi compute shadery. sort\_particle\_local je první v poøadí. Tento shader slou¾í pro urychlení vyu¾itím lokální pamìti. V rámci ka¾dé pracovní skupiny jsou hodnoty klíè a index nakopírovány do lokální pamìti a poté je provádìno øazení dokud velikost seøazených podsekvencí není velikost pracovní skupiny. Pro na¹í velikost skupiny 512 se pro ka¾dé vlákno bude provádìt 44 porovnání dvojic. Následuje sort\_particle, který vyu¾ívá globální pamìti a registrù, neobsahuje ¾ádné cykly, ty jsou na stranì CPU. V rámci jednoho volání provede porovnání odpovídající 1, 2, 3 nebo 4 vnitøním cyklùm. Na obrázku \ref{bitonic2} je vidìt pøíklad porovnání, která se dají provést v rámci jednoho vlákna. Hodnoty se kterými se bude pracovat se na zaèátku ulo¾í do registrù, poté se provedou v¹echna porovnání a nakonec se ulo¾í zpìt do globální pamìti. Tento shader se volá, dokud vzdálenost porovnávaných hodnot je vìt¹í ne¾ velikost pracovní skupiny. Poté se volá sort\_particle\_local\_inner který dokonèí vnitøní smyèku vyu¾itím lokální pamìti i registrù. Funguje obdobnì jako sort\_particle, ale obsahuje vnitøní smyèku a hodnoty jsou na zaèátku ulo¾eny z globální do lokální pamìti. Celkem je øazení v rámci jednoho snímku provedeno 3x.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=10cm,keepaspectratio]{fig/bitonic2.png}
+  \caption{V¹echna porovnání èervenì je mo¾né provést v rámci jednoho vlákna, stejnì tak ty zelenì. Pøevzato z \cite{bitonic_paper}.}
+  \label{bitonic2}
+\end{figure} 
 
 
-\subsection{Vykreslení}
+\subsection{Vykreslení} \label{vykres}
 Pøi vykreslování byla pou¾ita metoda seøazení øezù dýmu pomocí \textit{half vektoru}, nicménì nepodaøil se nám správnì nastavit re¾im míchání barev. Z toho dùvodu byl dým po simulaci øazen dvakrát, a to pro pohled z pozice svìtla a z pozice kamery.
 
 Pøi vykreslování z pozice kamery byly nejprve vykreslovány neprùhledné objekty scény do \textit{hloubkové mapy}. Poté byl vykreslován dým do \textit{light bufferu} a také do \textit{hloubkové mapy}. \textit{Light buffer} zde pøedstavuje klasickou texturu, do které je ukládán svìtelný pøízpìvek, který pøedstavují èástice dýmu.
