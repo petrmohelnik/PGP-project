@@ -123,16 +123,16 @@ Poté se aktualizuje pozice $\mathbf{r}$:
  \mathbf{r}_{t+\Delta t} = \mathbf{r}_{t} + \Delta t \mathbf{v}_{t+\Delta t}
 \end{equation}
 
-Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky. 
+Následnì se urèují kolize. Pøi kolizi s prostøedím je èástice odra¾ena smìrem od pøeká¾ky.
 
 \subsection{Øazení}
 Pro správné zobrazování èástic je potøeba øazení. Pro implementaci jsme zvolili \textit{Bitonic sort} \cite{bitonic_paper}, proto¾e je paralelní a datovì nezávislý a tudí¾ vhodný pro implementaci na GPU. Provádí $O(n\log(n^2))$ porovnání.
 
- Algoritmus øadí \textit{bitonické sekvence}. Bitonická sekvence je sekvence, kde $x_0 \leq \dots \leq x_k \geq \dots \geq x_{n-1}$ pro nìjaké $k, 0 \leq k \leq n$, nebo cyklické posunutí této sekvence. 
+ Algoritmus øadí \textit{bitonické sekvence}. Bitonická sekvence je sekvence, kde $x_0 \leq \dots \leq x_k \geq \dots \geq x_{n-1}$ pro nìjaké $k, 0 \leq k \leq n$, nebo cyklické posunutí této sekvence.
 
 Bitonic sort (viz obrázek \ref{fig:bitonic}) provádí $\log n$ iterací, kde výstupem ka¾dého prùchodu je pole tvoøené støídavì rostoucími a klesajícími posloupnostmi o velikosti $2^i$, kde $1 \leq i \leq \log n$ je èíslo iterace. Toho se dosáhne dal¹ími $i$ iteracemi v rámci $i$-té iterace. Ka¾dá tato vnitøní iterace provádí porovnání mezi prvky s polovièní vzdáleností ne¾ ta pøedchozí (viz obrázek \ref{fig:bitonic}). Nakonec vznikne jedna rostoucí nebo klesající posloupnost.
 
-Takto funguje bitonic sort pro posloupnosti délky mocniny 2. Triviální øe¹ení pro libovolné délky posloupnosti by bylo na konci uva¾ovat prvky maximální (resp. minimální) hodnoty. Proto¾e bitonic sort øadí prvky v sekvencích o støídajícíh se smìrech (rostoucí nebo klesající), tyto prvky by byly pøesouvány a musely by tedy fyzicky existovat. 
+Takto funguje bitonic sort pro posloupnosti délky mocniny 2. Triviální øe¹ení pro libovolné délky posloupnosti by bylo na konci uva¾ovat prvky maximální (resp. minimální) hodnoty. Proto¾e bitonic sort øadí prvky v sekvencích o støídajícíh se smìrech (rostoucí nebo klesající), tyto prvky by byly pøesouvány a musely by tedy fyzicky existovat.
 
 Nicménì v bitonic sortu není podstatné zda jsou sekvence øazeny jako rostoucí/klesající nebo naopak. Proto mù¾e být øazení upraveno tak, aby v ka¾dé iteraci $i$ byla na konci rostoucí (resp. klesající) sekvence a tím hodnoty nebudou nikdy pøesouvány a tudí¾ nemusí existovat.
 
@@ -162,14 +162,14 @@ Pøi stínování je pak vyu¾it výsledek \textit{light bufferu} spolu se \textit{stí
 
 \section{Popis øe¹ení}
 
-Pro implementaci jsme pou¾ili \textit{OpenGL} ve verzi {\ttfamily 4.3}. K simulaci dýmu byly vyu¾ity \textit{compute shadery} spolu s \textit{shader storage} buffery. V èásti stínovány zaji¹»ovaly \textit{framebuffery} záznam do textur.
+Pro implementaci jsme pou¾ili \textit{C++}, \textit{STL}, \textit{SDL}, \textit{GLM}, \textit{GLEW} a \textit{OpenGL} ve verzi {\ttfamily 4.3}. K simulaci dýmu byly vyu¾ity \textit{compute shadery} spolu s \textit{shader storage} buffery. V èásti stínovány zaji¹»ovaly \textit{framebuffery} záznam do textur.
 
 \subsection{Simulace}
-Pro simulaci je zavedeno nìkolik  shader storage buffer objectù (SSBO), v¹echny mají velikost maximálního poètu èástic v systému. Pro vytvoøení základní struktury èásticového systému jsme se inspirovali ve slajdech z pøedná¹ky \cite{thomas}.
+Pro simulaci je zavedeno nìkolik  shader storage buffer objektù (SSBO), v¹echny mají velikost maximálního poètu èástic v systému. Pro vytvoøení základní struktury èásticového systému jsme se inspirovali ve slajdech z pøedná¹ky \cite{thomas}.
 
 \vspace*{1\baselineskip}
 
-Základní buffer je {\tt ParticlePool}, který slou¾í pro ulo¾ení èástic. Ká¾dá èástice má ulo¾ených 12 floatù: pozici, rychlost, sílu, hustotu, tlak a èas ¾ivota. 
+Základní buffer je {\tt ParticlePool}, který slou¾í pro ulo¾ení èástic. Ká¾dá èástice má ulo¾ených 12 floatù: pozici, rychlost, sílu, hustotu, tlak a èas ¾ivota.
 
 Dal¹í je {\tt DeadList}, který obsahuje indexy do {\tt ParticlePool} s èásticemi, které jsou volné k pou¾ití. K tomu se pou¾ívá atomický èítaè, urèující pozici od které vpravo jsou volné indexy.
 
@@ -198,12 +198,12 @@ Následnì jsou èástice øazeny pro vykreslení, viz kapitola \ref{vykres}. Pro øaze
   \includegraphics[width=10cm,keepaspectratio]{fig/bitonic2.png}
   \caption{V¹echna porovnání èervenì je mo¾né provést v rámci jednoho vlákna, stejnì tak ty zelenì. Pøevzato z \cite{bitonic_paper}.}
   \label{bitonic2}
-\end{figure} 
+\end{figure}
 
 
 \vspace*{1\baselineskip}
 
-Klidovou hustotu $\rho_0$ uva¾ujeme $0.59 (\frac{kg}{m^3})$ a hmotnost $m$ jedné èástice $5 \times 10^{-5}(kg)$. Radius $h = 0.06 (m)$ je urèen, aby do nìj spadalo asi 12 èástic, dále $k = 4 (J)$, $\mu = 0.01 (Pa \cdot s)$ a $b = 5$. Tyto hodnoty jsou pøevzaty z \cite{kelager06}, kde jsou urèeny pomocí fyzikálních vztahù pro objem, hustotu, hmotnost aj. Hodnota $k$ není fyzikálnì pøesná, proto¾e by simulace dobøe nefungovala s tak velikou hodnotou. To jak dobøe tato hodnota bude fungovat je závislé na mno¾ství èástic v simulaci.  
+Klidovou hustotu $\rho_0$ uva¾ujeme $0.59 (\frac{kg}{m^3})$ a hmotnost $m$ jedné èástice $5 \times 10^{-5}(kg)$. Radius $h = 0.06 (m)$ je urèen, aby do nìj spadalo asi 12 èástic, dále $k = 4 (J)$, $\mu = 0.01 (Pa \cdot s)$ a $b = 5$. Tyto hodnoty jsou pøevzaty z \cite{kelager06}, kde jsou urèeny pomocí fyzikálních vztahù pro objem, hustotu, hmotnost aj. Hodnota $k$ není fyzikálnì pøesná, proto¾e by simulace dobøe nefungovala s tak velikou hodnotou. To jak dobøe tato hodnota bude fungovat je závislé na mno¾ství èástic v simulaci.
 
 \subsection{Vykreslení} \label{vykres}
 Pøi vykreslování byla pou¾ita metoda seøazení øezù dýmu pomocí \textit{half vektoru}, nicménì nepodaøil se nám správnì nastavit re¾im míchání barev. Z toho dùvodu byl dým po simulaci øazen dvakrát, a to pro pohled z pozice svìtla a z pozice kamery.
@@ -239,8 +239,29 @@ Obr. \ref{fig:app00} \ref{fig:app01} \ref{fig:app02} \ref{fig:app03}.
 
 \section{Závìr}
 
-Tady by mìlo být struènì napsané jak to funguje.
+Implementovali jsme nìkolik metod pro správnou simulaci a zobrazení dýmu. Pro simulaci byly pou¾ity metody \textit{Smoothed Particle Hydrodynamics} a \textit{Bitonic sort}. Pøi vykreslení pak byly pou¾ity techniky \textit{shadow mappingu}, \textit{light bufferu} a \textit{sun rays}. Výsledek byl testován na sestavì s grafikou: \textit{ASUS Strix GeForce GTX 960 2GB}. Bohu¾el se nepodaøilo zmìøit pøesný poèet snímkù za sekundu, proto¾e pøi testování poèet neklesnul pod 60 snímkù za sekundu. Zbytek namìøeých hodnot shrnuje následující tabulka:
 
+\vspace*{1\baselineskip}
+
+\begin{center}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    Doba bìhu & Vyu¾ití GPU [\%] & Poèet èástic & FPS \\
+    \hline
+    10 s & 30 & 2500 & 60 \\
+    30 s & 35 & 8000 & 60 \\
+    1 m & 40 & 16000 & 60 \\
+    1.5 m & 50 & 23000 & 60 \\
+    2 m & 70 & 30000 & 60 \\
+    2.5 m & 75 & 35000 & 60 \\
+    3 m & 80 & 36000 & 60 \\
+    4 m & 85 & 46000 & 60 \\
+    5 m & 85 & 52000 & 60 \\
+    \hline
+  \end{tabular}
+\end{center}
+
+\newpage
 
 \bibliographystyle{IEEEtran}
 \begin{flushleft}
